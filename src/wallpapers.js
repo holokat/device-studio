@@ -13,8 +13,9 @@ export const presentationWallpapers = {
   pixel: { name: 'Dunes', file: 'pixel-dunes-obsidian.jpg', fy: .5, finishes: { Obsidian: 'pixel-dunes-obsidian.jpg', Canyon: 'pixel-dunes-canyon.jpg', Olive: 'pixel-dunes-olive.jpg', Fog: 'pixel-dunes-fog.jpg' } },
   duo: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
   'duo-cover': { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
-  ipad: { name: 'Ringed giant over the lake', file: 'ringed-giant-lake-ipad.jpg', fy: .5 },
-  'ipad-portrait': { name: 'Ringed giant over the lake', file: 'ringed-giant-lake-ipad.jpg', fy: .5 },
+  // The iPad shares the MacBook Pro's loops (lighter loops for the pale finishes).
+  ipad: { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Silver: 'silver-loops-macbook.jpg', Starlight: 'silver-loops-macbook.jpg' }, finishInk: { Silver: '#111113', Starlight: '#111113' } },
+  'ipad-portrait': { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Silver: 'silver-loops-macbook.jpg', Starlight: 'silver-loops-macbook.jpg' }, finishInk: { Silver: '#111113', Starlight: '#111113' } },
   // Mac displays: macOS desktops made for the studio (menu bar and Dock are part of the picture).
   mbp: { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Silver: 'silver-loops-macbook.jpg' } },
   sdx: { name: 'Spectrum folds', file: 'spectrum-folds-xdr.jpg', fy: .5 },
@@ -23,6 +24,8 @@ export const presentationWallpapers = {
 const url = (w) => w.path || 'screens/wallpapers/' + w.file;
 // A wallpaper can come in one file per device finish (`finishes: {name: file}`).
 const pick = (w, finish) => (finish && w.finishes?.[finish] ? { ...w, file: w.finishes[finish], path: null } : w);
+// Status-bar colour for a wallpaper (and finish).
+export const wallpaperInk = (key, finish) => presentationWallpapers[key]?.finishInk?.[finish] || presentationWallpapers[key]?.ink || '#fff';
 export function preloadWallpapers() {
   for (const w of Object.values(presentationWallpapers)) { screenImage(url(w)); for (const f of Object.keys(w.finishes || {})) screenImage(url(pick(w, f))); }
 }

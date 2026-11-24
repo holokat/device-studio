@@ -56,8 +56,8 @@ export const devices = {
     finishTitle: 'Finish', finishCaption: 'Bead-blasted anodized aluminium', defaultFinish: 'Blue',
     finishes: ipadFinishes.map(([name, hex, , low, high]) => [name, hex, swatch(low, hex, high)]),
     shots: deviceShots.ipad, parts: deviceParts.ipad, points: 'live',
-    // Landscape panel, 2360 × 1640 px, drawn at 0.8×. Presentation = the studio wallpaper shared with the iPhones.
-    artwork: { width: 1888, height: 1312, aspect: IPAD_ASPECT, label: 'iPad', layout: 1180, presentation: (W, H) => wallpaperCanvas('ipad', W, H) },
+    // Landscape panel, 2360 × 1640 px, drawn at 0.8×. Presentation = the MacBook Pro loops wallpaper.
+    artwork: { width: 1888, height: 1312, aspect: IPAD_ASPECT, label: 'iPad', layout: 1180, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('ipad', W, H, finishName(ipadFinishes, hex)) },
     overlay: { style: 'tablet' },
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
