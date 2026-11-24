@@ -4,6 +4,8 @@ import { devicePoints } from './cinematic.js';
 import { duoFinishes, INNER_ASPECT } from './duo/model.js';
 import { ipadFinishes, IPAD_ASPECT } from './ipad/model.js';
 import { ipadMiniFinishes, IPAD_MINI_ASPECT } from './ipadmini/model.js';
+import { watchFinishes, WATCH_ASPECT } from './watch/model.js';
+import { watchFaceCanvas } from './watchface.js';
 import { airFinishes, AIR_ASPECT } from './air/model.js';
 import { wallpaperCanvas } from './wallpapers.js';
 import { i17Finishes, I17_ASPECT } from './i17/model.js';
@@ -80,7 +82,21 @@ export const devices = {
       slider: 'Assembly separation', partial: 'Assembly view',
     },
     fineprint: 'Exterior from Apple specifications. The rear panel split and interior layout are illustrative.',
+  },  watch: {
+    id: 'watch', name: 'Apple Watch', file: 'Apple-Watch',
+    finishTitle: 'Finish', finishCaption: 'Aluminium case · sport band', defaultFinish: 'Gold', presets: false,
+    finishes: watchFinishes.map(([name, hex, band]) => [name, hex, swatch(band, hex, '#ffffff')]),
+    shots: deviceShots.watch, parts: deviceParts.watch, points: 'live',
+    // 46 mm display, 416 × 496 pt, drawn at 2×.
+    artwork: { width: 832, height: 992, aspect: WATCH_ASPECT, label: 'Apple Watch', presentation: (W, H) => watchFaceCanvas(W, H), presentationLabel: ['Presentation', 'Analog face'] },
+    assembly: {
+      title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
+      toing: 'Exploding', froming: 'Assembling', clipTo: 'Disassemble', clipFrom: 'Reassemble', playTo: 'Play disassembly', playFrom: 'Play reassembly',
+      slider: 'Assembly separation', partial: 'Assembly view',
+    },
+    fineprint: 'Exterior from Apple product imagery. Band closure simplified; interior layout is illustrative.',
   },
+
 
   air: {
     id: 'air', name: 'iPhone Air', file: 'iPhone-Air',
