@@ -324,11 +324,11 @@ diffuseColor.rgb *= 1. - mix(duoDim.x, duoDim.y, duoSide);`);
   // across that chord, so it closes to nothing when open and spans the full
   // closed thickness when folded.
   const bisector = new THREE.Group(); bisector.name = 'Fold bisector'; spine.add(bisector);
-  // Closed, the spine reads as a satin island: about 70% of the folded
+  // Closed, the spine reads as a satin island: about 76% of the folded
   // thickness, inset from both ends, softly rounded, with each half's polished
   // rail showing either side of it. Built at its closed width and scaled with
   // the fold chord.
-  const CHORD = 2 * CORNER_R, ISLE_W = CHORD * .7, ISLE_H = H - .62, ISLE_R = .26, BEV = .035;
+  const CHORD = 2 * CORNER_R, ISLE_W = CHORD * .76, ISLE_H = H - .30, ISLE_R = .26, BEV = .035;
   const isle = new THREE.Shape();
   { const w = ISLE_W / 2 - BEV, h = ISLE_H / 2 - BEV, r = Math.min(ISLE_R, w - .001);
     isle.moveTo(-w + r, -h); isle.lineTo(w - r, -h); isle.quadraticCurveTo(w, -h, w, -h + r);
