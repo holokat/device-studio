@@ -1,0 +1,167 @@
+/* Studio, modern pass: soft graphite surfaces, no hairlines, sentence-case
+   type, rounded cards and round icon buttons. Layered over studio.css. */
+:root{--bg:#161617;--panel:#1c1c1e;--card:#252527;--card-2:#2c2c2e;--hover:#303033;--well:#252527;--well-2:#252527;
+  --line:transparent;--line-2:#3a3a3d;--line-3:#3a3a3d;--text:#ececee;--soft:#c9c9cd;--muted:#8e8e93;--dim:#8e8e93;
+  --accent:#f2f2f4;--accent-ink:#121213;--accent-bg:#303033;--accent-line:#5a5a5f;--glass:rgba(28,28,30,.72);
+  --lib-w:300px;--insp-w:320px;font:14px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Inter,Arial,sans-serif}
+body{display:flex;flex-direction:column;height:100dvh;background:var(--bg)}
+button>span[data-icon] svg,[data-icon]>svg{width:20px;height:20px}
+button:hover:not(:disabled){filter:none}
+.eyebrow,.panel-title h2,.parts summary h2,.motion-editor__head h3,.tag{text-transform:none!important;letter-spacing:0!important}
+
+/* Top bar: one surface with the panels, no rule under it. */
+.topbar{height:60px;padding:0 16px;gap:16px;background:var(--panel);border:0}
+.brand{font-size:16px;font-weight:600;gap:10px}.brand svg{color:var(--text)}
+.seg-box{background:transparent;border:0;padding:0;gap:4px}
+.seg-box>button{height:36px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:500;color:var(--muted)}
+.seg-box>button:hover{color:var(--text)}
+.seg-box>button[aria-pressed=true],.seg-box>button[aria-selected=true]{background:var(--card-2);color:var(--text);font-weight:500}
+.tag{font-size:11px;font-weight:500;padding:2px 7px;border-radius:999px;background:#2f3a52;color:#c9d6ff}
+.ghost{height:40px;border:0;border-radius:999px;background:var(--card);font-size:14px}.ghost[aria-expanded=true]{background:var(--card-2)}
+.icon-only{width:40px;height:40px;padding:0;border-radius:50%}
+.primary{height:40px;padding:0 18px;border-radius:999px;font-size:14px;font-weight:600;background:#f2f2f4;color:#121213}
+
+/* Panels: soft cards, no borders. */
+.shell{flex:1;height:auto;min-height:0;gap:0;background:var(--panel)}
+.library{background:var(--panel);border:0;padding:4px 12px 0}
+.inspector{background:var(--panel);border:0;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px}
+.stage-column{padding:0 0 0;background:var(--panel)}
+#stage{border-radius:22px;background:#202022}
+.library-head{padding:8px 4px 12px}
+.tabs2{display:flex;gap:4px}.tabs2>button{height:36px;flex:1;border-radius:999px}
+.count,.move__dur,.tl-ticks,#move-time,#progress-out,.motion-editor__head output,.motion-speed-row output{display:none!important}
+.lib-tools{padding:0 4px 12px;gap:12px}
+.search{height:42px;border:0;border-radius:14px;background:var(--card);font-size:14px;padding:0 14px;gap:10px}.search svg{width:18px;height:18px}.search:focus-within{box-shadow:0 0 0 2px var(--line-2)}
+.chips{gap:6px}.chips button{height:32px;padding:0 13px;border:0;border-radius:999px;background:var(--card);font-size:13px;color:var(--soft)}
+.chips button[aria-pressed=true]{background:#f2f2f4;color:#121213}
+.lib-list{padding:0 0 16px;gap:2px}
+.move{gap:14px;padding:8px;border:0;border-radius:16px}
+.move:hover{background:var(--card)}.move.active{background:var(--card-2);border:0}
+.move__thumb{width:56px;height:56px;border-radius:14px;border:0;background:var(--card)}
+.move.active .move__thumb{background:#38383b}.move__thumb path.c{stroke:var(--muted)}.move.active .move__thumb path.c{stroke:var(--text)}
+.move__name{font-size:15px;font-weight:500}.move__note{font-size:13px;color:var(--muted)}
+#lib-views .lib-list{padding:0 4px 16px;gap:10px}#lib-views .eyebrow{margin-top:8px}
+.eyebrow{font-size:15px!important;font-weight:500!important;color:var(--text)!important}
+.view-grid{gap:8px}
+.shot{padding:6px;border:0;border-radius:16px;background:var(--card);font-size:13px;gap:6px}
+.shot img{border-radius:11px;background:#2a2a2d}.shot:hover{background:var(--card-2)}.shot.active{background:#3a3a3d;border:0}
+
+/* Viewport chrome: round floating buttons, no text chips. */
+.hud-left{top:16px;left:16px}.hud-right{display:none}
+.hud-chip{display:none}
+.hud-btn{height:40px;padding:0 16px 0 12px;border:0;border-radius:999px;background:rgba(44,44,46,.82);font:500 14px -apple-system,BlinkMacSystemFont,sans-serif}.hud-btn svg{width:18px;height:18px;color:var(--text)}
+.tool-rail{right:16px;gap:8px;padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.tool-rail button{width:44px;height:44px;border-radius:50%;background:rgba(44,44,46,.82);color:var(--text);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.tool-rail button:hover{background:rgba(60,60,63,.9)}.tool-rail button[aria-pressed=true]{background:#f2f2f4;color:#121213}
+#stage.light .hud-btn,#stage.light .tool-rail button{background:rgba(255,255,255,.8);color:#1d1d1f}#stage.light .hud-btn svg{color:#1d1d1f}
+
+/* Play bar: full window width, one row. */
+.transport{position:static;flex:none;display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:12px 20px 14px;border:0;border-radius:0;background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}
+.transport-row{display:contents}
+.transport-row .spacer{display:none}
+.move-play{grid-column:1;width:44px;height:44px;background:#f2f2f4;color:#121213}.move-play svg{width:18px;height:18px}
+.is-playing .move-play{box-shadow:0 0 0 5px rgba(255,255,255,.1)}
+.move-now{grid-column:2;min-width:0;width:170px}.move-now strong{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timeline{grid-column:3;grid-row:1;height:44px}
+.tl-track,.tl-fill{top:20px;height:4px}.tl-track{background:#38383b}.tl-fill{background:#f2f2f4}
+.tl-key{top:17px;width:10px;height:10px;margin-left:-5px;background:var(--panel);border:1.5px solid #c9c9cd}
+.tl-head{top:12px;height:20px;width:3px;margin-left:-1.5px;background:#fff;box-shadow:none}
+.transport .pills,#move-loop,#move-render{grid-row:1}
+.transport-row>.pills{grid-column:4}
+.transport{grid-template-columns:auto auto minmax(0,1fr) auto auto auto}
+#move-loop{grid-column:5}#move-render{grid-column:6}
+.pills{background:var(--card);border:0;padding:3px}.pills>button{height:34px;font-size:13px;border-radius:999px}
+.pills>button[aria-pressed=true]{background:var(--hover)}
+.round{width:40px;height:40px;border:0;background:var(--card);color:var(--text)}.round[aria-pressed=true]{background:#f2f2f4;color:#121213;border:0}
+.outline{height:40px;padding:0 16px;border:0;border-radius:999px;background:var(--card);font-size:14px}.outline.small{height:34px;border-radius:999px;font-size:13px;background:var(--card-2)}
+
+/* Inspector cards. */
+.panel{gap:14px;padding:16px;border:0;border-radius:20px;background:var(--card)}
+.panel:last-child{border:0}
+.panel-title h2,.parts summary h2{font-size:15px!important;font-weight:500!important;color:var(--text)!important}
+.panel-title>span,#finish-name{font-size:13px;color:var(--muted);font-weight:400}
+.swatch{width:36px;height:36px;box-shadow:inset 0 -3px 6px rgba(0,0,0,.3)}
+.swatch.active{box-shadow:inset 0 -3px 6px rgba(0,0,0,.3),0 0 0 2px var(--card),0 0 0 4px #f2f2f4}
+.custom{width:36px;height:36px;border:0;background:var(--card-2);color:var(--soft)}.custom svg{width:18px;height:18px}
+.art-card{padding:8px;border:0;border-radius:16px;background:var(--card-2);gap:14px}.art-card img{width:44px;height:72px;border-radius:10px}
+.art-info strong{font-size:14px;font-weight:500}.art-info span{font-size:13px;color:var(--muted)}
+.select-row,.dialog-select{font-size:14px;color:var(--soft)}
+select{border:0;border-radius:12px;background-color:var(--card-2);padding:8px 30px 8px 12px;font-size:13px}
+.chip-grid{gap:6px}.chip-grid button{height:36px;border:0;border-radius:999px;background:var(--card-2);font-size:13px;color:var(--soft)}
+.chip-grid button[aria-pressed=true]{background:#f2f2f4;color:#121213}
+.backdrops{gap:8px}.backdrops button{width:28px;height:28px;border-radius:50%;border:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.backdrops button[aria-pressed=true]{box-shadow:0 0 0 2px var(--card),0 0 0 4px #f2f2f4}
+input[type=range]{height:4px;background:linear-gradient(to right,#f2f2f4 var(--progress),#38383b var(--progress))}
+input[type=range]::-webkit-slider-thumb{width:18px;height:18px}
+.endpoint{padding-left:52px}.endpoint button{font-size:13px;color:var(--muted)}
+.part{height:40px;border:0;border-radius:12px;padding:0 10px;font-size:14px}.part:hover{background:var(--card-2)}
+.parts summary svg{width:18px}
+.text-button{color:var(--soft);font-size:13px}.fineprint{font-size:12px;color:var(--muted)}
+
+/* Motion editor (timing curve) in the same language. */
+.motion-editor__head h3{font-size:15px!important;font-weight:500!important;color:var(--text)!important}
+.motion-presets{border:0;background:var(--card-2);border-radius:14px}.motion-presets button{height:32px;font-size:13px;border-radius:11px}
+.motion-presets button[aria-pressed=true]{background:var(--hover)}
+.motion-curve-wrap{border:0;background:#1f1f21;border-radius:16px}
+.motion-curve__grid{stroke:#2c2c2f}.motion-curve__path{stroke:#f2f2f4}.motion-curve__pin{fill:#f2f2f4}
+.motion-speed-row{font-size:14px}.motion-values input{border:0;background:var(--card-2);border-radius:8px}
+.motion-draw-tools button{border:0;background:var(--card-2)}
+
+/* Dialog and notice. */
+dialog{border:0;border-radius:24px;background:#1f1f21;padding:24px}
+.dialog-heading h2{font-size:18px;font-weight:600}.dialog-check{font-size:14px}
+#export-info{font-size:13px}#download{height:44px;border-radius:999px}
+#notice{background:#2c2c2e;font-size:13px}#notice:not(:empty){border:0;padding:10px 18px}
+#export-status{color:var(--soft)}
+
+/* Light theme. */
+:root[data-theme=light]{--bg:#f5f5f7;--panel:#f5f5f7;--card:#ffffff;--card-2:#ececef;--hover:#e3e3e7;--well:#fff;--well-2:#ececef;--text:#1d1d1f;--soft:#424245;--muted:#6e6e73;--dim:#86868b;--accent:#1d1d1f;--accent-ink:#fff;--glass:rgba(255,255,255,.8)}
+[data-theme=light] .topbar{background:var(--panel)}
+[data-theme=light] #stage{background:#e9e9ec}
+[data-theme=light] .seg-box>button[aria-pressed=true],[data-theme=light] .seg-box>button[aria-selected=true]{background:#fff;box-shadow:none}
+[data-theme=light] .primary,[data-theme=light] .move-play,[data-theme=light] .chips button[aria-pressed=true],[data-theme=light] .chip-grid button[aria-pressed=true],[data-theme=light] .round[aria-pressed=true]{background:#1d1d1f;color:#fff}
+[data-theme=light] .chips button,[data-theme=light] .chip-grid button{background:#fff;color:#424245}
+[data-theme=light] .tl-track{background:#d8d8dc}[data-theme=light] .tl-fill,[data-theme=light] .tl-head{background:#1d1d1f}
+[data-theme=light] .swatch.active{box-shadow:inset 0 -3px 6px rgba(0,0,0,.18),0 0 0 2px #fff,0 0 0 4px #1d1d1f}
+[data-theme=light] .backdrops button[aria-pressed=true]{box-shadow:0 0 0 2px #fff,0 0 0 4px #1d1d1f}
+[data-theme=light] input[type=range]{background:linear-gradient(to right,#1d1d1f var(--progress),#d8d8dc var(--progress))}
+[data-theme=light] dialog{background:#fff}[data-theme=light] .tag{background:#e8f1fc;color:#0071e3}
+[data-theme=light] .move.active{background:#fff}[data-theme=light] .shot.active{background:#e3e3e7}
+[data-theme=light] .motion-curve-wrap{background:#f5f5f7}[data-theme=light] .motion-curve__path{stroke:#1d1d1f}
+
+/* Narrow layouts. */
+@media(max-width:1180px){:root{--lib-w:260px;--insp-w:290px}}
+@media(max-width:980px){.inspector{top:68px;border:0;border-radius:24px;background:var(--panel)}}
+@media(max-width:720px){.transport{grid-template-columns:auto minmax(0,1fr) auto;padding:10px 12px}.move-now{display:none}.timeline{grid-column:2}.transport-row>.pills,#move-render{display:none}#move-loop{grid-column:3}
+  .library{border:0}.inspector{border:0}}
+/* Easing presets: one row of curve glyphs, name in a popover. */
+.motion-presets{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;padding:4px;overflow:visible}
+.motion-presets button{position:relative;height:40px;padding:0;display:grid;place-items:center;border-radius:11px;color:var(--muted)}
+.motion-presets button:hover{color:var(--text);background:var(--hover)}
+.motion-presets button[aria-pressed=true]{color:var(--text);background:var(--hover)}
+.motion-presets svg{width:24px;height:24px}.motion-presets svg .axis{stroke-opacity:.25}.motion-presets svg .h{stroke-width:1;stroke-opacity:.5}.motion-presets svg circle{fill:currentColor;stroke:none}
+.motion-presets button::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translate(-50%,4px);padding:6px 10px;border-radius:9px;background:#3a3a3d;color:#f2f2f4;font-size:12px;font-weight:500;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s,transform .12s;z-index:5;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.motion-presets button:hover::after,.motion-presets button:focus-visible::after{opacity:1;transform:translate(-50%,0)}
+[data-theme=light] .motion-presets button::after{background:#1d1d1f;color:#fff}
+/* Backdrop: label on its own line, swatches share the card width so they never overflow. */
+.backdrop-row{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;justify-content:stretch}
+.backdrop-row .backdrops{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;width:100%}
+.backdrop-row .backdrops button{width:100%;height:auto;aspect-ratio:1.5;max-height:34px;border-radius:10px;background:var(--c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.backdrop-row .backdrops .clear-chip{background:conic-gradient(#cfcfcf 25%,#fff 0 50%,#cfcfcf 0 75%,#fff 0) 0 0/10px 10px}
+.backdrop-row .backdrops button[aria-pressed=true]{box-shadow:0 0 0 2px var(--card),0 0 0 4px #f2f2f4}
+[data-theme=light] .backdrop-row .backdrops button{box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+[data-theme=light] .backdrop-row .backdrops button[aria-pressed=true]{box-shadow:0 0 0 2px #fff,0 0 0 4px #1d1d1f}
+/* Keep the library one width on both tabs (its content must not stretch it). */
+.library{min-width:0;width:var(--lib-w);overflow:hidden}.library .chips{flex-wrap:wrap}.move{min-width:0}.move__name,.move__note{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* SVG layer row in the Screen card. */
+.layer-row{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--soft)}
+.layer-label{flex:none}.layer-name{flex:1;min-width:0;text-align:right;color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.layer-clear{flex:none;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:var(--card-2);color:var(--soft);display:grid;place-items:center}.layer-clear svg{width:16px;height:16px}
+/* Play bar: quiet greys in dark mode (light mode keeps its own colours). */
+:root:not([data-theme=light]) .tl-track{background:#2c2c2e}
+:root:not([data-theme=light]) .tl-fill{background:#4a4a4e}
+:root:not([data-theme=light]) .tl-key{background:#1c1c1e;border-color:#6e6e73}
+:root:not([data-theme=light]) .tl-head{background:#c7c7cc}
+/* Tool rail is loose round buttons in both themes: no panel behind them. */
+#stage.light .tool-rail{background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+#stage.light .tool-rail button:hover{background:#fff}

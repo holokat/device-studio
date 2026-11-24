@@ -1,0 +1,25 @@
+.motion-editor{display:flex;flex-direction:column;gap:12px}
+.motion-editor__head,.motion-speed-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.motion-editor__head h3{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.motion-editor__head p{display:none}
+.motion-editor__head output,.motion-speed-row output{font:500 11px var(--mono);color:#a3a3ab}
+.motion-speed-row{align-items:center;font-size:12px;color:#b4b4bb}
+.motion-speed-row input{--motion-progress:42.85%;background:linear-gradient(to right,var(--accent) var(--motion-progress),var(--line-2) var(--motion-progress))}
+.motion-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0;padding:3px;border:1px solid #1f1f24;border-radius:10px;background:#0d0d10}
+.motion-presets legend{display:none}
+.motion-presets button{height:28px;border-radius:7px;font-size:11px;font-weight:500;color:#a3a3ab}
+.motion-presets button[aria-pressed=true]{background:#23232a;color:#fff}
+.motion-curve-wrap{padding:10px;border-radius:12px;background:#0b0b0d;border:1px solid #1f1f24}
+.motion-curve{display:block;width:100%;height:auto;overflow:visible;touch-action:none}
+.motion-curve__grid{fill:none;stroke:#1e1e24;stroke-width:1;vector-effect:non-scaling-stroke}
+.motion-curve__guide{fill:none;stroke:#4a5675;stroke-dasharray:3 4;stroke-width:1;vector-effect:non-scaling-stroke}
+.motion-curve__path{fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.motion-curve__handle{fill:#f4f4f6;stroke:#0b0b0d;stroke-width:2;cursor:grab}.motion-curve__handle:focus{outline:none;stroke:var(--accent);stroke-width:3}
+.motion-curve__pin{fill:var(--accent)}
+.motion-draw{cursor:crosshair}.motion-draw__band{fill:#111115}
+.motion-curve-hint{margin:8px 0 0;font-size:11px;color:var(--dim)}
+.motion-values{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;margin-top:10px}
+.motion-values label{display:flex;align-items:center;justify-content:space-between;gap:6px;color:var(--dim);font-size:10.5px}
+.motion-values input{width:56px;padding:4px 6px;border:1px solid var(--line-3);border-radius:6px;background:var(--well);color:var(--text);font:10.5px var(--mono)}
+.motion-draw-tools{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+.motion-draw-tools button{height:26px;padding:0 10px;border-radius:999px;border:1px solid var(--line-3);font-size:11px;color:#dedee3}

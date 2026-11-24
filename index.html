@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#050506"><title>Model studio</title><script>try{if(localStorage.getItem("studio-theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script><link rel="stylesheet" href="studio.css?v=modern-1"><link rel="stylesheet" href="motion.css?v=1795520541"><link rel="stylesheet" href="modern.css?v=9"><script defer src="studio.js?v=modern-16"></script></head>
+<body>
+<header class="topbar">
+  <div class="brand"><span data-icon="ArCube3"></span>Studio</div>
+  <div id="device-picker" class="seg-box" role="group" aria-label="Device"><button data-device="pro" aria-pressed="true">iPhone 18 Pro</button><button data-device="duo" aria-pressed="false">iPhone Duo<span class="tag">new</span></button><button data-device="i17" aria-pressed="false">iPhone 17</button><button data-device="air" aria-pressed="false">iPhone Air</button><button data-device="pixel" aria-pressed="false">Pixel 11 Pro<span class="tag">new</span></button><button data-device="ipad" aria-pressed="false">iPad</button><button data-device="mbp" aria-pressed="false">MacBook Pro<span class="tag">new</span></button><button data-device="sdx" aria-pressed="false">Studio Display XDR<span class="tag">new</span></button><button data-device="imac" aria-pressed="false">iMac<span class="tag">new</span></button></div>
+  <div class="spacer"></div>
+    <button id="theme-toggle" class="ghost icon-only" type="button" aria-label="Switch to light mode" title="Light mode"><span class="i-sun" data-icon="Sun"></span><span class="i-moon" data-icon="Moon"></span></button>
+  <button id="toggle-inspector" class="ghost icon-only" aria-controls="inspector-panel" aria-expanded="true" aria-label="Inspector" title="Inspector"><span data-icon="SidebarSimpleRightWide"></span></button>
+  <button id="export-open" class="primary"><span data-icon="FileDownload"></span>Export</button>
+</header>
+<main class="shell">
+<aside class="library" aria-label="Library">
+  <div class="library-head">
+    <div class="seg-box tabs2" role="tablist" aria-label="Library sections">
+      <button role="tab" id="lib-tab-moves" aria-selected="true" aria-controls="lib-moves">Moves<span id="moves-count" class="count"></span></button>
+      <button role="tab" id="lib-tab-views" aria-selected="false" aria-controls="lib-views">Views<span id="views-count" class="count"></span></button>
+    </div>
+  </div>
+  <div id="lib-moves" class="lib-panel" role="tabpanel" aria-labelledby="lib-tab-moves">
+    <div class="lib-tools">
+      <label class="search"><span data-icon="MagnifyingGlass"></span><input id="move-search" type="search" placeholder="Search moves" aria-label="Search moves"></label>
+      <div id="move-cats" class="chips" role="group" aria-label="Move categories"></div>
+    </div>
+    <div id="moves-grid" class="lib-list"></div>
+  </div>
+  <div id="lib-views" class="lib-panel" role="tabpanel" aria-labelledby="lib-tab-views" hidden>
+    <div class="lib-list">
+      <h3 class="eyebrow">Compositions</h3><div id="views-compositions" class="view-grid"></div>
+      <h3 class="eyebrow">Details</h3><div id="views-details" class="view-grid"></div>
+    </div>
+  </div>
+</aside>
+<section class="stage-column" aria-label="Model viewport">
+  <div id="stage">
+    <canvas id="viewport" aria-label="Interactive 3D device. Drag to orbit and scroll or pinch to zoom." tabindex="0"></canvas>
+    <div class="hud-left">
+      <button id="assembly-toggle" class="hud-btn" type="button"><span data-icon="LayersThree"></span><span id="assembly-action">Explode</span></button>
+      <span class="hud-chip"><i class="dot"></i><span id="visibility-state">Assembled</span></span>
+      <select id="lens-focus" class="hud-select" aria-label="Inspect camera" hidden><option value="array">Camera array</option><option value="0">Ultra wide</option><option value="1">Main camera</option><option value="2">Telephoto</option><option value="stack">Telephoto optical stack</option></select>
+    </div>
+    <div class="hud-right"><span class="hud-chip" id="shot-label">Free orbit</span><span class="hud-chip" id="hud-look">Noir · Softbox</span></div>
+    <div class="tool-rail">
+      <button title="Zoom in" aria-label="Zoom in" id="zoom-in" data-icon="ZoomIn"></button>
+      <button title="Zoom out" aria-label="Zoom out" id="zoom-out" data-icon="ZoomOut"></button>
+      <button title="Reset camera" aria-label="Reset camera" id="fit" data-icon="FocusAuto"></button>
+      <button title="Turntable" aria-label="Turntable" id="turntable" aria-pressed="false" data-icon="Rotate360Left"></button>
+      <button title="Fullscreen viewport" aria-label="Fullscreen viewport" id="full" data-icon="Fullscreen1"></button>
+      <button title="Screenshot (S)" aria-label="Save screenshot" id="snap" data-icon="Camera1"></button>
+    </div>
+    <div id="loading" role="status">Preparing the model…</div>
+  </div>
+</section>
+<aside class="inspector" id="inspector-panel" aria-label="Inspector">
+  <section class="panel"><div class="panel-title"><h2>Finish</h2><span id="finish-name">Graphite</span></div>
+    <div class="swatches" id="finishes"><label class="custom" title="Choose custom finish"><span data-icon="PlusMedium"></span><input id="custom-color" type="color" value="#773c49" aria-label="Custom finish colour"></label></div></section>
+  <section class="panel"><div class="panel-title"><h2>Screen</h2></div>
+    <div class="art-card"><img id="art-thumb" alt=""><div class="art-info"><strong id="art-name">Contour</strong><span id="art-type">Studio wallpaper</span></div><label class="outline small upload-link">Replace<input type="file" id="upload" accept="image/png,image/jpeg,image/webp,image/avif,image/svg+xml,.svg,text/html,.html,.htm,video/mp4,video/webm,video/quicktime"></label></div>
+    <label class="select-row">Preset<select id="art-preset"><option value="presentation">Presentation</option><option value="contour">Contour</option><option value="mist">Soft gradient</option><option value="black">Black glass</option><optgroup label="Farbound wallpapers"><option value="fb-black-hole">Black hole</option><option value="fb-climate">Earth climate</option><option value="fb-deep-time">Deep time</option><option value="fb-galaxy-flight">Galaxy flight</option><option value="fb-gravity">Gravity</option><option value="fb-interaction">Night Earth</option><option value="fb-mars">Mars</option><option value="fb-real-data">Orbital data</option><option value="fb-sounds">Sounds</option><option value="fb-stars">Stars</option></optgroup></select></label>
+    <div class="layer-row"><span class="layer-label">SVG layer</span><span id="layer-name" class="layer-name">None</span><button id="layer-clear" class="layer-clear" aria-label="Remove SVG layer" title="Remove SVG layer" data-icon="CrossSmall" hidden></button><label class="outline small upload-link">Add<input type="file" id="layer-upload" accept="image/svg+xml,.svg"></label></div></section>
+  <section class="panel"><div class="panel-title"><h2>Light</h2></div>
+    <div id="rig-chips" class="chip-grid" role="group" aria-label="Light rig"><button data-rig="softbox" aria-pressed="false">Softbox</button><button data-rig="rim" aria-pressed="true">Rim</button><button data-rig="daylight" aria-pressed="false">Daylight</button></div>
+    <div class="select-row backdrop-row">Backdrop<div id="backdrop-chips" class="backdrops" role="group" aria-label="Backdrop"><button data-backdrop="auto" aria-pressed="true" title="Noir" aria-label="Noir" style="--c:#0b0b0d"></button><button data-backdrop="graphite" aria-pressed="false" title="Graphite" aria-label="Graphite" style="--c:#2c2c2e"></button><button data-backdrop="studio" aria-pressed="false" title="Gray sweep" aria-label="Gray sweep" style="--c:#9a9a9a"></button><button data-backdrop="stone" aria-pressed="false" title="Warm stone" aria-label="Warm stone" style="--c:#cfcac3"></button><button data-backdrop="white" aria-pressed="false" title="Porcelain" aria-label="Porcelain" style="--c:#e8e8ec"></button><button data-backdrop="clear" aria-pressed="false" title="Transparent" aria-label="Transparent" class="clear-chip"></button></div></div></section>
+  <section class="panel" id="motion-controls"></section>
+  <section class="panel assembly"><div class="panel-title"><h2 id="assembly-title">Assembly</h2><output id="progress-out">0%</output></div>
+    <div class="transport-mini"><button id="play" class="round" aria-label="Play disassembly" title="Play disassembly" data-icon="Play"></button><input id="spread" aria-label="Assembly separation" type="range" min="0" max="1000" step="1" value="0"></div>
+    <div class="endpoint"><button id="assembled"><span id="assembly-from">Assembled</span></button><button id="exploded"><span id="assembly-to">Exploded</span></button></div></section>
+  <details class="panel parts"><summary><h2>Parts</h2><span data-icon="ChevronDownSmall"></span></summary><div class="panel-title"><span></span><button id="show-all" class="text-button">Show all</button></div><div id="part-list"></div><p class="fineprint">Internal placement is inferred from the supplied mockup references.</p></details>
+</aside>
+</main>
+<footer class="transport" id="moves">
+      <div class="transport-row">
+        <button id="move-play" class="move-play" title="Play move" aria-label="Play move" data-icon="Play"></button>
+        <div class="move-now"><strong id="move-name">Hero reveal</strong><span id="move-time">00.00 / 04.50</span></div>
+        <div class="spacer"></div>
+        <div class="seg-box pills" role="group" aria-label="Move timing"><button id="timing-preset" aria-pressed="true">Built-in ease</button><button id="timing-curve" aria-pressed="false">My curve</button></div>
+        <button id="move-loop" class="round" aria-pressed="false" title="Loop move" aria-label="Loop move" data-icon="ArrowRotateCounterClockwise"></button>
+        <button id="move-render" class="outline"><span data-icon="Clapboard"></span>Render clip</button>
+      </div>
+      <div class="timeline" id="timeline" aria-label="Move timeline"><div class="tl-track"></div><div class="tl-fill" id="move-progress"></div><div id="tl-keys"></div><div class="tl-head" id="tl-head"></div></div>
+      <div class="tl-ticks" id="tl-ticks" aria-hidden="true"></div>
+    </footer>
+<dialog id="export-dialog"><div class="dialog-heading"><h2>Export</h2><button id="export-close" aria-label="Close export" data-icon="CrossMedium"></button></div>
+<label class="dialog-select">Output<select id="format"><option value="image">Still image · PNG</option><option value="video">Motion clip</option><option value="model">3D model · GLB</option></select></label>
+<div id="render-fields"><label class="dialog-select">Frame<select id="ratio"><option value="gallery">Composition · 4∶3</option><option value="wide">Landscape · 16∶9</option><option value="portrait">Portrait · 9∶16</option><option value="square">Square · 1∶1</option><option value="view">Viewport ratio</option></select></label>
+<label class="dialog-select">Long edge<select id="quality"><option value="1920">1920 px</option><option value="3840">3840 px</option></select></label></div>
+<div id="motion-fields" hidden><label class="dialog-select">Movement<select id="clip-mode"><optgroup label="Studio"><option value="orbit">Turntable</option><option value="open">Disassemble</option><option value="close">Reassemble</option></optgroup><optgroup label="Cinematic moves" id="clip-moves"></optgroup></select></label><label class="dialog-select">Duration<select id="duration"><option id="studio-duration" value="studio" hidden>Studio speed</option><option selected value="6">6 seconds</option><option value="10">10 seconds</option></select></label></div>
+<label class="dialog-check" id="alpha-row"><input type="checkbox" id="export-alpha"> Transparent background</label>
+<p id="export-info">Renders the current view with the selected backdrop.</p><button class="primary" id="download"><span data-icon="FileDownload"></span><span id="download-text">Save image</span></button><span role="status" id="export-status"></span></dialog>
+<div id="notice" role="status"></div>
+</body></html>
