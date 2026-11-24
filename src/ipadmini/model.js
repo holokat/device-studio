@@ -19,11 +19,11 @@ import { makeLogo } from '../exterior.js';
 export const IPAD_MINI = { W: 13.48, H: 19.54, T: 0.63 };
 const W = IPAD_MINI.W, H = IPAD_MINI.H, HW = W / 2, HH = H / 2, HT = IPAD_MINI.T / 2;
 const SZ = HT / .35;                              // depth scale from the 7.0 mm iPad sections
-const RC = 1.3;                                   // plan-view corner radius
+const RC = 1.45;                                  // plan-view corner radius (fitted to Apple's front photo)
 const LIP = 0.052;                                // aluminium lip around the cover glass
 // Active area from 2266 × 1488 px at 326 ppi: 17.655 × 11.594 cm (8.3" diagonal),
 // which leaves a uniform ~9.4 mm border (black mask plus lip) on all four sides.
-const ACTIVE = { w: 11.594, h: 17.655, r: 0.36 };  // display corner concentric with the body (RC - bezel)
+const ACTIVE = { w: 11.594, h: 17.655, r: 0.65 };  // display corner radius, fitted to Apple's front photo
 export const IPAD_MINI_ASPECT = ACTIVE.h / ACTIVE.w; // landscape artwork aspect (2266∶1488)
 const ZS = -HT - 0.0006;                          // display emission plane, just proud of the glass
 const ZE = -0.045 * SZ;                           // centre of the flat side band

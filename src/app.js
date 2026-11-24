@@ -280,7 +280,8 @@ async function boot(){
   $('layer-clear').onclick=()=>setLayer(null);
   function syncOverlay(){
     thumbsStale();syncLayer?.();
-    const d=devices[stage.device],on=art.mode==='presentation'&&!!d?.overlay;
+    // No status bar (time, signal, Wi-Fi, battery) on any device: screens show the artwork alone.
+    const d=devices[stage.device],on=false;
     if(!on){screenOverlay.sync(null);coverOverlay.sync(null);stage.mark();return;}
     const portrait=stage.tablet?.state().screen==='portrait';
     const [W,H]=portrait?PORTRAIT[stage.device]:[d.artwork.width,d.artwork.height];
