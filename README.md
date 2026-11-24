@@ -2,6 +2,8 @@
 
 A browser studio for product shots and launch-style films of devices. Every model is built in code with [three.js](https://threejs.org). There are no imported meshes.
 
+**Try it:** https://device-studio.21mediaco.workers.dev (nothing to install).
+
 Drop your own design onto the screen, pick a finish, light it and frame it, then export a PNG, a WebM clip or a GLB.
 
 ## Devices
@@ -29,6 +31,8 @@ npm run preview
 Then open http://127.0.0.1:48372. The built `studio.js` is committed, so `npm run preview` (or any static server) works without building.
 
 URL parameters: `?device=imac`, `?shot=hero`, `?finish=orange`.
+
+To host your own copy on Cloudflare Workers, run `npx wrangler deploy`. `wrangler.jsonc` serves the folder as static files, and `.assetsignore` leaves out the sources.
 
 ## Layout
 

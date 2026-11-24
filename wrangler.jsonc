@@ -1,0 +1,6 @@
+{
+  // Serves the studio as static files on Cloudflare Workers: `npx wrangler deploy`.
+  "name": "device-studio",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "." }
+}
