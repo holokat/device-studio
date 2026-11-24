@@ -26,9 +26,9 @@ import { lathe } from '../optics.js';
 //                                 strap, ≈2.4 mm thick; pin-and-tuck closure
 export const WATCH = { W: 3.90, H: 4.60, T: 0.97 };
 const W = WATCH.W, H = WATCH.H, HW = W / 2, HH = H / 2, HT = WATCH.T / 2;
-const RC = 1.1;                                        // plan corner radius (perimeter() squircle)
+const RC = 1.3;                                        // plan corner radius (perimeter() squircle), rounder per Apple's front shot
 // Active area: 416 × 496 px, 2 mm in from each long edge.
-const ACTIVE = { w: 3.50, h: 3.50 * 496 / 416, r: .9 };
+const ACTIVE = { w: 3.50, h: 3.50 * 496 / 416, r: 1.1 };
 export const WATCH_ASPECT = ACTIVE.w / ACTIVE.h;       // portrait artwork, width / height (416 / 496)
 // Recommended screen artwork: the full 416 × 496 panel.
 export const WATCH_ARTWORK = { width: 416, height: 496 };

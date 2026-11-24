@@ -84,7 +84,7 @@ export const devices = {
     fineprint: 'Exterior from Apple specifications. The rear panel split and interior layout are illustrative.',
   },  watch: {
     id: 'watch', name: 'Apple Watch', file: 'Apple-Watch',
-    finishTitle: 'Finish', finishCaption: 'Aluminium case · sport band', defaultFinish: 'Gold', presets: false,
+    finishTitle: 'Finish', finishCaption: 'Aluminium case · sport band', defaultFinish: 'Jet Black', presets: false,
     finishes: watchFinishes.map(([name, hex, band]) => [name, hex, swatch(band, hex, '#ffffff')]),
     shots: deviceShots.watch, parts: deviceParts.watch, points: 'live',
     // 46 mm display, 416 × 496 pt, drawn at 2×.
