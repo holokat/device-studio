@@ -2,3 +2,4 @@ node_modules/
 .DS_Store
 # Old static view previews (views now render live thumbnails)
 previews/*.webp
+.wrangler
