@@ -56,7 +56,9 @@ import { makeLogo } from '../exterior.js';
 //     156 × 27 px -> 3.25 × 0.58 cm with the camera in its upper half, lower
 //     bezel 0.37 cm then ~0.75 cm of matte black hinge cover above the deck
 //   side-both-sizes-open-90 (676 px = 22.12 cm): lid 12.5 px -> 0.40 cm
-export const MBP = { W: 31.26, D: 22.12, H: 1.55, BASE: 1.15, LID: 0.40, FOOT: 0.10, R: 1.0, OPEN: 110 };
+// The base is drawn a little slimmer than Apple's 1.13 cm (0.98 cm), with the
+// roll, scoop and ports scaled to suit; it reads closer to the product photos.
+export const MBP = { W: 31.26, D: 22.12, H: 1.55, BASE: .98, LID: 0.40, FOOT: 0.10, R: 1.0, OPEN: 110 };
 const W = MBP.W, D = MBP.D, HW = W / 2, HD = D / 2, R = MBP.R, YB = MBP.BASE, TL = MBP.LID;
 export const MBP_ASPECT = 3024 / 1964;            // landscape artwork, full panel including the notch strip
 const DISPLAY = { w: 30.24, h: 19.64, rTop: .42, rBottom: .05 };
@@ -66,7 +68,7 @@ const NOTCH = { w: 3.25, h: .60, r: .21, flare: .07, cam: .27 };   // camera cen
 // the deck, so that opened it drops behind the base with the black hinge cover
 // showing above the deck (as in Apple's photography) and the aluminium hinge
 // arms bridging the gap. Pivot space: lid closed, origin on the axis.
-const AXIS = { y: .60, z: 10.80 };
+const AXIS = { y: YB - .55, z: 10.80 };
 const LY = YB - AXIS.y;                            // display face of the closed lid
 const LID_FRONT = -HD - AXIS.z, LID_REAR = HD - .02 - AXIS.z;
 const TOP_BEZEL = .55;
@@ -78,8 +80,8 @@ const WELL = { x: 13.95, z0: -2.06, z1: 9.40, r: .35, depth: .12 };
 const PAD = { w: 12.95, z0: -10.48, z1: -2.36, r: .42 };
 const KEY = { pitch: 1.898, row: 1.846, h: 1.58, gap: .30, left: 13.61, row0: 8.29, r: .13, top: YB - .015 };
 const GRILLE = { x0: 14.10, x1: 15.30, z0: -1.62, z1: 9.00 };
-const SCOOP = { a: 2.5, f: .25, depth: .27, h: .45 };
-const PORT_Y = YB - .38;
+const SCOOP = { a: 2.5, f: .25, depth: .27, h: .40 };
+const PORT_Y = YB - .34;
 const FEET = { x: HW - 2.75, z: HD - 2.75, r: .95 };
 
 // Finishes: [name, anodized aluminium hex, keyboard hex]. Space Black first (default).
@@ -210,7 +212,7 @@ const scoopDepth = (h) => h <= YB - SCOOP.h ? 0 : SCOOP.depth * Math.sqrt(Math.m
 // the slab (the soft edge in every side photo), a flat wall carrying the
 // ports, a crisp 0.06 cm top edge. The scoop is a cove that starts with a
 // crease 0.45 cm below the deck.
-const ROLL = .45, TOP_R = .06;
+const ROLL = .38, TOP_R = .06;
 function rollPoint(p) { return [ROLL * (1 - Math.pow(Math.sin(p), .86)), ROLL * (1 - Math.pow(Math.cos(p), .86))]; }
 function baseRows() {
   const rows = [];

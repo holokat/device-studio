@@ -5,7 +5,6 @@ import { duoFinishes, INNER_ASPECT } from './duo/model.js';
 import { ipadFinishes, IPAD_ASPECT } from './ipad/model.js';
 import { airFinishes, AIR_ASPECT } from './air/model.js';
 import { wallpaperCanvas } from './wallpapers.js';
-import { htmlScreenCanvas } from './html-screen.js';
 import { i17Finishes, I17_ASPECT } from './i17/model.js';
 import { mbpFinishes, MBP_ASPECT } from './macbook/model.js';
 import { sdxFinishes, SDX_ASPECT } from './studiodisplay/model.js';
@@ -131,8 +130,8 @@ export const devices = {
     finishes: sdxFinishes.map(([name, hex]) => [name, hex, swatch('#b9babd', hex, '#ffffff')]),
     shots: deviceShots.sdx, parts: deviceParts.sdx, points: 'live',
     // 5120 × 2880 panel, drawn at 5/16 size.
-    // Presentation: a video editor rebuilt in HTML (screens/editor), laid out at 1920 pt and fitted to the panel.
-    artwork: { width: 1600, height: 900, aspect: SDX_ASPECT, label: 'Studio Display XDR', layout: 1920, presentation: (W, H) => htmlScreenCanvas({ url: 'screens/editor/index.html' }, W, H, 1920), presentationLabel: ['Editor', 'HTML screen'] },
+    // Presentation: the Spectrum folds wallpaper. The HTML editor (screens/editor/index.html) can be loaded with Replace.
+    artwork: { width: 1600, height: 900, aspect: SDX_ASPECT, label: 'Studio Display XDR', layout: 1920, presentation: (W, H) => wallpaperCanvas('sdx', W, H), presentationLabel: ['Presentation', 'Spectrum folds'] },
     // Only the HTML editor and your own artwork; the wallpaper presets are hidden.
     presets: false,
     assembly: {
@@ -148,7 +147,7 @@ export const devices = {
     finishes: imacFinishes.map(([name, back, chin, stand]) => [name, back, swatch(stand, back, chin)]),
     shots: deviceShots.imac, parts: deviceParts.imac, points: 'live',
     // 4480 × 2520 panel, drawn at 1/4 size; laid out like a 2240 pt desktop.
-    artwork: { width: 1120, height: 630, aspect: IMAC_ASPECT, label: 'iMac', layout: 2240, presentation: (W, H) => wallpaperCanvas('imac', W, H), presentationLabel: ['Presentation', 'macOS desktop'] },
+    artwork: { width: 1120, height: 630, aspect: IMAC_ASPECT, label: 'iMac', layout: 2240, presentation: (W, H) => wallpaperCanvas('imac', W, H), presentationLabel: ['Presentation', 'Lilac ribbons'] },
     presets: false,
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',

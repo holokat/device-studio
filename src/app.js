@@ -7,7 +7,7 @@ import {createStage,shots,parts} from './stage.js';
 import {screenArtwork,makeWallpaper} from './artwork.js';
 import {farboundId,farboundScreen} from './farbound.js';
 import {onScreenImage} from './screen-images.js';
-import {wallpaperCanvas,preloadWallpapers} from './wallpapers.js';
+import {wallpaperCanvas,preloadWallpapers,presentationWallpapers} from './wallpapers.js';
 import {createScreenOverlay} from './screen-overlay.js';
 import {isSVGFile,readSVG,fitSVG,splitSVG,rasterImage} from './svg-layer.js';
 import {devicePoints} from './cinematic.js';
@@ -283,8 +283,8 @@ async function boot(){
     const [W,H]=portrait?[1312,1888]:[d.artwork.width,d.artwork.height];
     const pts=stage.points?.()||devicePoints[stage.device]||null,isl=pts?.island;
     const island=isl?.isVector3?isl:isl?.p||null;
-    screenOverlay.sync({root:stage.model,model:stage.model,material:stage.exterior.screenMaterial,W,H,style:portrait?'phone':d.overlay.style,wordmark:!layer,island:d.overlay.style==='phone'?island:null});
-    if(stage.device==='duo')coverOverlay.sync({root:stage.duo.root,model:stage.duo.root,material:stage.duo.outerMaterial,W:1398,H:2034,style:'phone',island:null});
+    screenOverlay.sync({root:stage.model,model:stage.model,material:stage.exterior.screenMaterial,W,H,style:portrait?'phone':d.overlay.style,wordmark:false,color:presentationWallpapers[stage.device]?.ink||'#fff',island:d.overlay.style==='phone'?island:null});
+    if(stage.device==='duo')coverOverlay.sync({root:stage.duo.root,model:stage.duo.root,material:stage.duo.outerMaterial,W:1398,H:2034,style:'phone',island:null,wordmark:false,color:presentationWallpapers['duo-cover']?.ink||'#fff'});
     else coverOverlay.sync(null);
     stage.mark();
   }

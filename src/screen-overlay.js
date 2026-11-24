@@ -126,7 +126,7 @@ export function createScreenOverlay() {
     const meshes = [];
     spec.root.traverse(o => { if (o.isMesh && o.material === spec.material && o.geometry.getAttribute('uv')) meshes.push(o); });
     const stamp = meshes.map(m => m.uuid + ':' + m.geometry.getAttribute('uv').version).join('|');
-    const next = [spec.W, spec.H, spec.style, stamp, spec.wordmark !== false, spec.layerKey || ''].join('/');
+    const next = [spec.W, spec.H, spec.style, stamp, spec.wordmark !== false, spec.layerKey || '', spec.color || ''].join('/');
     if (next === key) return;
     clear(); key = next;
     if (!meshes.length) return;

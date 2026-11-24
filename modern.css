@@ -165,3 +165,20 @@ dialog{border:0;border-radius:24px;background:#1f1f21;padding:24px}
 /* Tool rail is loose round buttons in both themes: no panel behind them. */
 #stage.light .tool-rail{background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
 #stage.light .tool-rail button:hover{background:#fff}
+/* Blue accent: primary buttons and selected tabs, chips and segments. */
+:root{--blue:#0a84ff;--blue-hover:#3395ff}
+:root[data-theme=light]{--blue:#007aff;--blue-hover:#1a88ff}
+.primary,[data-theme=light] .primary,.move-play,[data-theme=light] .move-play{background:var(--blue);color:#fff}
+.primary:hover,.move-play:hover{background:var(--blue-hover);filter:none}
+.seg-box>button[aria-pressed=true],.seg-box>button[aria-selected=true],
+[data-theme=light] .seg-box>button[aria-pressed=true],[data-theme=light] .seg-box>button[aria-selected=true],
+.chips button[aria-pressed=true],[data-theme=light] .chips button[aria-pressed=true],
+.chip-grid button[aria-pressed=true],[data-theme=light] .chip-grid button[aria-pressed=true]{background:var(--blue);color:#fff}
+.seg-box .tag{color:inherit}
+/* Light mode sliders and play bar: a light track with a blue fill instead of near-black. */
+[data-theme=light] input[type=range]{background:linear-gradient(to right,var(--blue) var(--progress),#e0e0e5 var(--progress))}
+[data-theme=light] input[type=range]::-webkit-slider-thumb{background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.18)}
+[data-theme=light] .tl-track,#stage.light .tl-track{background:#e0e0e5}
+[data-theme=light] .tl-fill{background:var(--blue)}
+[data-theme=light] .tl-head,#stage.light .tl-head{background:var(--blue)}
+[data-theme=light] .tl-key{background:#fff;border-color:#b8b8be}

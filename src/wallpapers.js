@@ -1,22 +1,24 @@
-// Presentation wallpapers: a different Farbound space wallpaper per device,
+// Presentation wallpapers per device. The iPhones share a light silver
+// wallpaper (`ink` darkens the status bar and wordmark to suit); the others use
+// a Farbound space wallpaper
 // from farbound.fyi/wallpapers (the plain versions; the FARBOUND wordmark and
 // the status bar are drawn as vectors by screen-overlay.js). `fy` keeps that
 // part of the picture in view when a display crops it.
 import { screenImage, drawCover } from './screen-images.js';
 
 export const presentationWallpapers = {
-  pro: { name: 'Black hole', file: 'black-hole-iphone-pro.jpg', fy: .5 },
-  i17: { name: "Jupiter's storm", file: 'jupiters-storm-iphone-pro.jpg', fy: .5 },
-  air: { name: 'Aurora ice world', file: 'aurora-ice-world-iphone-pro-max.jpg', fy: .5 },
+  pro: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
+  i17: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
+  air: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
   pixel: { name: 'Terracotta Jupiter', file: 'terracotta-jupiter-iphone-pro-max.jpg', fy: .5 },
-  duo: { name: 'Ringed planet over the canyon', file: 'ringed-planet-over-the-canyon-iphone-duo-inner.jpg', fy: .5 },
-  'duo-cover': { name: 'Ringed planet over the canyon', file: 'ringed-planet-over-the-canyon-iphone-duo-cover.jpg', fy: .5 },
+  duo: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
+  'duo-cover': { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
   ipad: { name: 'Ringed giant over the lake', file: 'ringed-giant-lake-ipad.jpg', fy: .5 },
   'ipad-portrait': { name: 'Ringed giant over the lake', file: 'ringed-giant-lake-ipad.jpg', fy: .5 },
   // Mac displays: macOS desktops made for the studio (menu bar and Dock are part of the picture).
-  mbp: { name: 'macOS desktop', path: 'screens/macos-desktop.jpg', fy: .5 },
-  sdx: { name: 'macOS desktop', path: 'screens/macos-desktop-wide.jpg', fy: .5 },
-  imac: { name: 'macOS desktop', path: 'screens/macos-desktop-wide.jpg', fy: .5 },
+  mbp: { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5 },
+  sdx: { name: 'Spectrum folds', file: 'spectrum-folds-xdr.jpg', fy: .5 },
+  imac: { name: 'Lilac ribbons', file: 'lilac-ribbons-imac.jpg', fy: .5 },
 };
 const url = (w) => w.path || 'screens/wallpapers/' + w.file;
 export function preloadWallpapers() { for (const w of Object.values(presentationWallpapers)) screenImage(url(w)); }
