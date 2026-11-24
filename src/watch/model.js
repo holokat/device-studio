@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { profileGeometry, perimeter } from '../casework.js';
 import { lathe } from '../optics.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { bandOptions, bandOption, bandMaterialFor, BAND_TILE } from './bands.js';
 
 // Apple Watch (current aluminium model, 46 mm case), procedural. 1 unit = 1 cm.
@@ -384,7 +386,7 @@ const ZB0 = Z_AXIS;                     // strap centreline where it leaves the 
 const ROOT = HH - .22;                  // strap end, inside the slot
 function buildBands(M, opt = bandOptions[0], mat = M.band) {
   const style = opt.style, bodyT = STYLE_T[style] ?? BAND.bodyT;
-  const isLoop = style === 'sportLoop' || style === 'braided' || style === 'milanese';
+  const isLoop = style === 'sportLoop' || style === 'braided' || style === 'milanese' || style === 'link';
   const ridge = style === 'ocean' ? oceanRidge : null;
   const hw = M.hardware;
   const top = new THREE.Group(); top.name = 'Top band';
@@ -396,8 +398,10 @@ function buildBands(M, opt = bandOptions[0], mat = M.band) {
 
   // Worn: a closed wrist loop through the case. Top strap carries the pin and
   // rides outside over the back; the bottom strap (holes) lies under it.
-  const ring = [V(-1.2, ZB0), V(1.2, ZB0), V(ROOT, ZB0), V(2.65, ZB0 + .03), V(3.15, .22), V(3.5, .8), V(3.62, 1.6), V(3.45, 2.45), V(2.95, 3.2),
-    V(2.1, 3.7), V(1.05, 3.95), V(0, 4.02), V(-1.05, 3.95), V(-2.1, 3.7), V(-2.95, 3.2), V(-3.45, 2.45), V(-3.62, 1.6), V(-3.5, .8), V(-3.15, .22), V(-2.65, ZB0 + .03), V(-ROOT, ZB0)];
+  // Leaving each lug the strap already bends in toward the wrist (Apple's
+  // worn shots), rather than running straight out before curling round.
+  const ring = [V(-1.2, ZB0), V(1.2, ZB0), V(ROOT, ZB0), V(2.5, ZB0 + .08), V(2.86, .2), V(3.18, .58), V(3.4, 1.2), V(3.45, 1.95), V(3.27, 2.68), V(2.85, 3.28),
+    V(2.1, 3.72), V(1.05, 3.95), V(0, 4.02), V(-1.05, 3.95), V(-2.1, 3.72), V(-2.85, 3.28), V(-3.27, 2.68), V(-3.45, 1.95), V(-3.4, 1.2), V(-3.18, .58), V(-2.86, .2), V(-2.5, ZB0 + .08), V(-ROOT, ZB0)];
   // Split the closed ring into the two strap paths (each from its slot).
   const closed = new THREE.CatmullRomCurve3(ring, true, 'centripetal', .5);
   const dense = closed.getSpacedPoints(2400), rootIdx = (sign) => { let best = 0, bd = Infinity; dense.forEach((p, i) => { const d = Math.abs(p.y - sign * ROOT) + Math.abs(p.z - ZB0) * 4; if (d < bd) { bd = d; best = i; } }); return best; };
@@ -439,6 +443,58 @@ function buildBands(M, opt = bandOptions[0], mat = M.band) {
   // Hole positions: every 6.2 mm, or in the Ocean Band's valleys between ribs.
   const holeAt = (n, s0) => Array.from({ length: n }, (_, k) => ridge ? 1.4 + .46 * (Math.round((s0 - 1.4) / .46) + k + .5) : s0 + k * .62);
   const thick = bodyT * 2;
+  // ── Link bracelet: brushed links on a curve, lug connectors, butterfly clasp.
+  const LINK = { hw: 1.12, ht: .15, pitch: .44, len: .4 };
+  const X1 = new THREE.Vector3(1, 0, 0);
+  const frameOn = (c, side, s) => {
+    const L = c.getLength(), u = THREE.MathUtils.clamp(s / L, 0, 1), p = c.getPointAt(u), t = c.getTangentAt(u).normalize();
+    const n = (side > 0 ? new THREE.Vector3().crossVectors(t, X1) : new THREE.Vector3().crossVectors(X1, t)).normalize(); return { p, t, n, s };
+  };
+  const piece = (c, s0, s1) => { const L = c.getLength(); return new THREE.CatmullRomCurve3(Array.from({ length: 16 }, (_, i) => c.getPointAt(THREE.MathUtils.clamp((s0 + (s1 - s0) * i / 15) / L, 0, 1))), false, 'centripetal', .5); };
+  const linkGeo = (() => {
+    const w = LINK.hw * 2, mid = w * .6, ear = (w - mid) / 2 - .006;
+    const a = new RoundedBoxGeometry(mid, LINK.ht * 2, LINK.len, 3, .05);
+    const b = new RoundedBoxGeometry(ear, LINK.ht * 1.9, LINK.len * .96, 3, .05); b.translate(-(mid + ear) / 2 - .003, -LINK.ht * .04, 0);
+    const c2 = b.clone(); c2.translate(mid + ear + .006, 0, 0);
+    return mergeGeometries([a, b, c2]);
+  })();
+  // Links between s0 and s1 along curve c, merged into one mesh, over a dark backing strip.
+  const links = (c, side, s0, s1, name) => {
+    const g = [], m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
+    for (let s = s0 + LINK.pitch / 2; s <= s1 - LINK.pitch / 2 + 1e-6; s += LINK.pitch) {
+      const f = frameOn(c, side, s); q.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X1, f.n, f.t));
+      g.push(linkGeo.clone().applyMatrix4(m4.compose(f.p, q, new THREE.Vector3(1, 1, 1))));
+    }
+    const grp = new THREE.Group(); grp.name = name;
+    if (g.length) { const mesh = new THREE.Mesh(mergeGeometries(g), mat); mesh.name = 'Links'; grp.add(mesh); }
+    const back = sweepBand(piece(c, s0, s1), side, s1 - s0, () => LINK.hw * .9, () => LINK.ht * .55, () => 0, M.slot, 'Link backing'); grp.add(back.mesh);
+    return grp;
+  };
+  const lugNeck = (c, side, name, reverse = false) => {
+    // Short tapered connector from the slot to the first link, in the same metal.
+    const s0 = reverse ? c.getLength() - .62 : 0, s1 = reverse ? c.getLength() : .62;
+    const pc = reverse ? new THREE.CatmullRomCurve3(piece(c, s0, s1).getSpacedPoints(15).reverse(), false, 'centripetal', .5) : piece(c, s0, s1);
+    return sweepBand(pc, reverse ? -side : side, .62, (s) => LINK.hw + (BAND.root - LINK.hw) * neckF(s) * 1.4, (s) => BAND.rootT + (LINK.ht - BAND.rootT) * smooth(0, .5, s), () => 0, mat, name, neckBend).mesh;
+  };
+  if (style === 'link') {
+    const pts = []; for (let i = iT, n = 0; n < M2; n++, i++) { const k = (i + M2) % M2; pts.push(dense[k].clone()); if (k === iB) break; }
+    const c = new THREE.CatmullRomCurve3(pts.filter((_, k) => k % 6 === 0 || k === pts.length - 1), false, 'centripetal', .5), L = c.getLength();
+    const C0 = L / 2 - 1.2, C1 = L / 2 + 1.2;
+    loop.top.add(lugNeck(c, 1, 'Top lug connector'), links(c, 1, .6, C0, 'Top links'));
+    loop.bottom.add(lugNeck(c, 1, 'Bottom lug connector', true), links(c, 1, C1, L - .6, 'Bottom links'));
+    const clasp = sweepBand(piece(c, C0, C1), 1, C1 - C0, () => LINK.hw + .02, () => LINK.ht + .02, () => 0, mat, 'Butterfly clasp', null, false);
+    const seam = new THREE.Mesh(new THREE.BoxGeometry(LINK.hw * 1.3, .012, .012), M.slot); seam.name = 'Clasp seam';
+    { const f = frameOn(c, 1, L / 2); seam.position.copy(f.p).addScaledVector(f.n, LINK.ht + .02); seam.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X1, f.n, f.t)); }
+    loop.top.add(clasp.mesh, seam);
+    const openPath2 = (sign, extra) => new THREE.CatmullRomCurve3(
+      [[ROOT, ZB0], [2.7, ZB0 + .03], [3.6, .14], [4.6, .48], [5.55, 1.05], [6.35, 1.85], [6.85 + extra * .2, 2.75 + extra]].map(([y, z]) => V(sign * y, z)), false, 'centripetal', .5);
+    for (const [grp, sign, extra] of [[open.top, 1, 0], [open.bottom, -1, .9]]) {
+      const oc = openPath2(sign, extra), OL = oc.getLength();
+      grp.add(lugNeck(oc, sign, 'Lug connector'), links(oc, sign, .6, OL - (sign > 0 ? 1.2 : 0), 'Links'));
+      if (sign > 0) grp.add(sweepBand(piece(oc, OL - 1.2, OL), 1, 1.2, () => LINK.hw + .02, () => LINK.ht + .02, () => 0, mat, 'Clasp half', null).mesh);
+    }
+    return { top, bottom, loop, open };
+  }
   if (isLoop) {
     // One continuous loop from the top slot round the wrist to the bottom slot.
     const pts = []; for (let i = iT, n = 0; n < M2; n++, i++) { const k = (i + M2) % M2; pts.push(dense[k].clone()); if (k === iB) break; }

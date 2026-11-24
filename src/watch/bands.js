@@ -18,6 +18,8 @@ export const bandOptions = [
   { id: 'ocean-cloud', name: 'Ocean Band', color: 'Cloud', style: 'ocean', hex: '#cfcdc6', hardware: '#a9a7a0' },
   { id: 'braided-magenta', name: 'Braided Solo Loop', color: 'Magenta', style: 'braided', hex: '#a11fb6' },
   { id: 'milanese-slate', name: 'Milanese Loop', color: 'Slate', style: 'milanese', hex: '#5e4e3d' },
+  { id: 'link-gold', name: 'Link Bracelet', color: 'Gold', style: 'link', hex: '#c8ab7e' },
+  { id: 'link-natural', name: 'Link Bracelet', color: 'Natural', style: 'link', hex: '#bdb6aa' },
 ];
 export const bandOption = (id) => bandOptions.find(o => o.id === id) || bandOptions[0];
 export const bandLabel = (o) => o.name + ' · ' + o.color;
@@ -70,7 +72,17 @@ function milanesePixel(o) {
     return [h, base[0] * k, base[1] * k, base[2] * k];
   };
 }
-const PIXEL = { sportLoop: sportLoopPixel, braided: braidedPixel, milanese: milanesePixel };
+// Brushed metal: fine grain running across the strap (constant along u).
+function brushedPixel(o) {
+  const base = rgb(o.hex);
+  return (u, v) => {
+    const y = Math.floor(v * 512);
+    const g = (hash(y, 7) - .5) * .5 + (hash(y >> 2, 11) - .5) * .35 + Math.sin(u * Math.PI * 2 * 3 + y * .7) * .04;
+    const h = .5 + g * .5, k = .94 + g * .14;
+    return [h, base[0] * k, base[1] * k, base[2] * k];
+  };
+}
+const PIXEL = { sportLoop: sportLoopPixel, braided: braidedPixel, milanese: milanesePixel, link: brushedPixel };
 
 // Colour, normal and roughness maps for a textile/metal option (null for rubber).
 const cache = new Map();
@@ -85,9 +97,9 @@ export function bandMaps(o) {
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const [h, r, g, b] = f((x + .5) / N, (y + .5) / N), i = y * N + x;
     H[i] = h; ci.data.set([r, g, b, 255], i * 4);
-    const rough = o.style === 'milanese' ? 70 + (1 - h) * 110 : 205 + (1 - h) * 40; ri.data.set([rough, rough, rough, 255], i * 4);
+    const rough = o.style === 'milanese' ? 70 + (1 - h) * 110 : o.style === 'link' ? 72 + (1 - h) * 40 : 205 + (1 - h) * 40; ri.data.set([rough, rough, rough, 255], i * 4);
   }
-  const strength = o.style === 'milanese' ? 2.2 : 3.2;
+  const strength = o.style === 'milanese' ? 2.2 : o.style === 'link' ? .35 : 3.2;
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const at = (xx, yy) => H[((yy + N) % N) * N + (xx + N) % N];
     const dx = (at(x + 1, y) - at(x - 1, y)) * strength, dy = (at(x, y + 1) - at(x, y - 1)) * strength;
@@ -106,6 +118,8 @@ export function bandMaps(o) {
 export function bandMaterialFor(o, rubber) {
   const maps = bandMaps(o);
   if (!maps) return rubber;
+  if (o.style === 'link') return new THREE.MeshPhysicalMaterial({ name: 'Brushed link metal', map: maps.map, normalMap: maps.normalMap, roughnessMap: maps.roughnessMap,
+    metalness: 1, roughness: 1, anisotropy: .6, clearcoat: .15, clearcoatRoughness: .3, envMapIntensity: 1.9 });
   if (o.style === 'milanese') return new THREE.MeshPhysicalMaterial({ name: 'Milanese stainless mesh', map: maps.map, normalMap: maps.normalMap, roughnessMap: maps.roughnessMap,
     normalScale: new THREE.Vector2(.9, .9), metalness: 1, roughness: 1, clearcoat: .25, clearcoatRoughness: .3, envMapIntensity: 1.6 });
   return new THREE.MeshPhysicalMaterial({ name: o.style === 'braided' ? 'Braided recycled yarn' : 'Woven nylon', map: maps.map, normalMap: maps.normalMap, roughnessMap: maps.roughnessMap,
@@ -115,6 +129,8 @@ export function bandMaterialFor(o, rubber) {
 // CSS background for the picker swatch: a crop of the texture, or a rubber gradient.
 export function bandSwatch(o, caseBand) {
   const maps = bandMaps(o);
+  if (o.style === 'link') { const c = new THREE.Color(o.hex), lo = c.clone().multiplyScalar(.72).getStyle(), hi = c.clone().lerp(new THREE.Color(0xffffff), .3).getStyle();
+    return `repeating-linear-gradient(180deg,${hi} 0 5px,${o.hex} 5px 9px,${lo} 9px 11px)`; }
   if (maps) { const c = document.createElement('canvas'); c.width = c.height = 96; c.getContext('2d').drawImage(maps.canvas, 0, 0, 160, 160, 0, 0, 96, 96); return `url(${c.toDataURL()}) center/cover`; }
   const hex = o.match ? caseBand : o.hex, c = new THREE.Color(hex), lo = c.clone().multiplyScalar(.7).getStyle(), hi = c.clone().lerp(new THREE.Color(0xffffff), .35).getStyle();
   return `linear-gradient(132deg,${lo} 0%,${hex} 40%,${hi} 72%,${hex} 100%)`;
