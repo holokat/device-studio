@@ -14,7 +14,7 @@ import { glassElement, opticalCoating, lathe } from '../optics.js';
 // Measurements from the supplied product photography (px → mm against the
 // known 72.0 mm width or 152.8 mm height; near-orthographic views):
 //   Obsidian back, straight (5.42 px/mm)
-//     plan corner radius         ≈9.5 mm (straight edge starts ≈9.4 mm from the corner)
+//     plan corner radius         ≈12 mm (circle fit to the front silhouette)
 //     camera bar                 66 × 24.5 mm stadium, 3.0 mm in from each long edge,
 //                                top 13.8 mm below the top edge (centre 26.1 mm)
 //     metal surround seen flat   ≈1.4 mm
@@ -34,9 +34,9 @@ import { glassElement, opticalCoating, lathe } from '../optics.js';
 //                                hole-punch centre ≈7.2 mm below the top edge
 export const PIXEL = { W: 7.20, H: 15.28, T: 0.86 };
 const W = PIXEL.W, H = PIXEL.H, HW = W / 2, HH = H / 2, HT = PIXEL.T / 2;
-const RC = .95;                                        // plan-view corner radius
+const RC = 1.2;                                        // plan-view corner radius (≈12 mm, fitted to the straight-on front)
 // Active area: 1280 × 2856 px on a 6.3-inch diagonal → 65.4 × 145.9 mm.
-const ACTIVE = { w: 6.54, h: 6.54 * 2856 / 1280, r: .78 };
+const ACTIVE = { w: 6.54, h: 6.54 * 2856 / 1280, r: .9 };
 export const PIXEL_ASPECT = ACTIVE.w / ACTIVE.h;      // portrait artwork, width / height
 // Recommended screen artwork: half of the 1280 × 2856 panel.
 export const PIXEL_ARTWORK = { width: 640, height: 1428 };

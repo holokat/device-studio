@@ -17,7 +17,7 @@ export const imacShots = {
   'imac-exploded': { shelf: 'compositions', title: 'Display layers', label: 'Front glass lifted', rot: U, dir: [.8, .25, -1], height: 70, minWidth: 104, progress: 1 },
   'imac-hinge': { shelf: 'details', title: 'Hinge', label: 'Hinge and polished cap', rot: U, at: 'hinge', dir: [1, .55, .6], height: 7, minWidth: 11, fov: 20 },
   'imac-ports': { shelf: 'details', title: 'Ports', label: 'Thunderbolt and USB-C', rot: U, at: 'ports', dir: [-.12, .08, 1], height: 4.5, minWidth: 9, fov: 20 },
-  'imac-cable': { shelf: 'details', title: 'Cable pass-through', label: 'Stand cut-out and power connector', rot: U, at: 'cable', dir: [.1, .12, 1], height: 13, minWidth: 14 },
+  'imac-cable': { shelf: 'details', title: 'Stand cut-out', label: 'Riser and oval cut-out', rot: U, at: 'cable', dir: [.1, .12, 1], height: 13, minWidth: 14 },
   'imac-power': { shelf: 'details', title: 'Power button', label: 'Back · power button', rot: U, at: 'power', dir: [.2, .1, 1], height: 3.6, minWidth: 6, fov: 20 },
   'imac-jack': { shelf: 'details', title: 'Headphone jack', label: 'Left edge · headphone jack', rot: U, at: 'jack', dir: [1, .1, -.7], height: 3.2, minWidth: 6, fov: 18 },
   'imac-camera': { shelf: 'details', title: 'Camera', label: '12MP Center Stage camera', rot: U, at: 'camera', dir: [0, .105, -1], height: 2.4, minWidth: 4.2, fov: 20 },

@@ -28,7 +28,7 @@ import { makeLogo } from '../exterior.js';
 //                          foot plate on the desk (14.7 cm deep including the
 //                          rear bend), a rear bend, and a riser leaning back
 //                          from the hinge to the bend (~26° from vertical);
-//                          vertical cable pass-through in the riser
+//                          vertical oval cut-out in the riser
 //   hinge                  barrel across the riser top, polished caps on both
 //                          ends; on the display back 40 % up from its bottom;
 //                          default tilt 6° back (screen faces slightly up)
@@ -51,7 +51,6 @@ const PORT_X0 = -HW + 3.6, PORT_STEP = 1.3, PORT_Y = -HH + 3.1;
 const POWER = { x: HW - 2.4, y: -HH + 2.4, r: .5 };
 const JACK_Y = -HH + 2.6;
 const LOGO_Y = 4.6, LOGO_W = 10.2;
-const CONN_Y = -15.0;                             // magnetic power connector, display back
 // Hinge axis in display coordinates.
 const HINGE_Y = -HH + IMAC.stand.hingeFrac * H, HINGE_Z = ZB + IMAC.stand.hingeOffset;
 
@@ -158,8 +157,6 @@ function makeMaterials() {
     board: new THREE.MeshStandardMaterial({ name: 'Logic board', color: 0x16241c, metalness: .35, roughness: .5 }),
     chip: new THREE.MeshPhysicalMaterial({ name: 'M4 package', color: 0x2a2b2e, metalness: .7, roughness: .3, clearcoat: .4 }),
     speaker: new THREE.MeshStandardMaterial({ name: 'Speaker module', color: 0x2d2e33, metalness: .5, roughness: .45 }),
-    cable: new THREE.MeshPhysicalMaterial({ name: 'Braided power cable', color: 0xb0c4e0, metalness: 0, roughness: .72, sheen: .6, sheenRoughness: .5, sheenColor: 0xffffff }),
-    connector: new THREE.MeshPhysicalMaterial({ name: 'Magnetic power connector', color: 0xb0c4e0, metalness: .85, roughness: .28, envMapIntensity: 1.6 }),
     keys: new THREE.MeshPhysicalMaterial({ name: 'White keycaps', color: 0xf6f6f4, metalness: 0, roughness: .48, clearcoat: .1, envMapIntensity: .9 }),
     mouse: new THREE.MeshPhysicalMaterial({ name: 'Magic Mouse glossy top', color: 0xf5f5f3, metalness: 0, roughness: .14, clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: 1.1 }),
   };
@@ -178,7 +175,7 @@ function applyFinish(M, hex) {
   const [, back, chin, stand] = finishRow(hex);
   M.back.color.set(back);
   M.chin.color.set(chin);
-  M.stand.color.set(stand); M.keyBase.color.set(stand); M.cable.color.set(stand); M.connector.color.set(stand);
+  M.stand.color.set(stand); M.keyBase.color.set(stand);
   M.logo.color.copy(tmp.set(back).lerp(white, .32));
 }
 
@@ -239,10 +236,6 @@ function buildEnclosure(M) {
   const logo = makeLogo(M.logo); logo.scale.setScalar(LOGO_W); logo.position.set(0, LOGO_Y, ZB + .003); g.add(logo);
   // Display-side hinge bracket (hidden behind the barrel).
   g.add(box(S.w - 1.2, 1.3, HINGE_Z - ZB, M.stand, 'Hinge bracket', 0, HINGE_Y, (HINGE_Z + ZB) / 2));
-  // Magnetic power connector seated on the back (seen through the stand's cut-out).
-  const plug = lathe('Magnetic power connector', [[0, .42], [.62, .42], [.74, .38], [.8, .3], [.82, .05], [.82, 0]].reverse(), M.connector);
-  plug.position.set(0, CONN_Y, ZB); g.add(plug);
-  const seat = new THREE.Mesh(new THREE.RingGeometry(.82, .9, 48), M.seam); seat.position.set(0, CONN_Y, ZB + .0012); seat.name = 'Power connector seat'; g.add(seat);
   return g;
 }
 
@@ -406,8 +399,6 @@ export function createImac() {
   const internals = buildInternals(M); head.add(internals);
   const ports = buildPorts(M); head.add(ports);
   const accessories = buildAccessories(M); accessories.visible = false; root.add(accessories);
-  // Power cable from the connector, out through the riser's cut-out to the desk.
-  const cable = new THREE.Mesh(new THREE.BufferGeometry(), M.cable); cable.name = 'Braided power cable'; stand.add(cable);
   const groups = { display, enclosure, internals, ports, stand, accessories };
 
   // ── Anchors ──
@@ -455,25 +446,11 @@ export function createImac() {
   }
 
   // ── Articulation: tilt in degrees about the hinge (+ leans the top back,
-  // the screen facing slightly up). The cable is re-routed for each pose. ──
+  // the screen facing slightly up). ──
   let tiltDeg = IMAC.tilt.rest, showAccessories = false;
-  const rootInv = new THREE.Matrix4();
-  function routeCable() {
-    root.updateMatrixWorld(true);
-    rootInv.copy(root.matrixWorld).invert();
-    const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(head.matrixWorld).applyMatrix4(rootInv);
-    const p0 = local(0, CONN_Y, ZB + .4), p1 = local(0, CONN_Y - .3, ZB + 1.6);
-    const [cz, cy] = riserPoint(HOLE.s - HOLE.h * .22);
-    const [bz, by] = riserPoint(HOLE.s - HOLE.h * .22, 2.5);
-    const curve = new THREE.CatmullRomCurve3([p0, p1, new THREE.Vector3(.4, cy, cz), new THREE.Vector3(.9, by - 1.5, bz + .6),
-      new THREE.Vector3(1.4, 1.4, BEND.cz + 3.6), new THREE.Vector3(1.9, .26, BEND.cz + 6), new THREE.Vector3(2.4, .26, BEND.cz + 8)], false, 'centripetal');
-    cable.geometry.dispose();
-    cable.geometry = new THREE.TubeGeometry(curve, 96, .25, 14, false);
-  }
   function pose() {
     headPivot.rotation.x = THREE.MathUtils.degToRad(tiltDeg);
     accessories.visible = showAccessories;
-    routeCable();
   }
   function setTilt(deg) { tiltDeg = THREE.MathUtils.clamp(deg, IMAC.tilt.min, IMAC.tilt.max); pose(); }
   function setAccessories(on) { showAccessories = !!on; pose(); }
