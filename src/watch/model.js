@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { profileGeometry, perimeter } from '../casework.js';
 import { lathe } from '../optics.js';
+import { bandOptions, bandOption, bandMaterialFor, BAND_TILE } from './bands.js';
 
 // Apple Watch (current aluminium model, 46 mm case), procedural. 1 unit = 1 cm.
 // Case 46 × 39 × 9.7 mm (glass crown to sensor dome), 416 × 496 px display.
@@ -159,6 +160,8 @@ function makeMaterials() {
     seam: new THREE.MeshStandardMaterial({ name: 'Button gap', color: 0x121316, metalness: .4, roughness: .6, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }),
     band: new THREE.MeshPhysicalMaterial({ name: 'Sport band fluoroelastomer', color: 0x3d3529, metalness: 0, roughness: .52, sheen: .35, sheenRoughness: .55, sheenColor: 0xffffff,
       clearcoat: .12, clearcoatRoughness: .45, specularIntensity: .45, envMapIntensity: .9 }),
+    hardware: new THREE.MeshPhysicalMaterial({ name: 'Titanium band hardware', color: 0xa9a7a0, metalness: 1, roughness: .32, clearcoat: .2, envMapIntensity: 1.8 }),
+    keeper: new THREE.MeshPhysicalMaterial({ name: 'Sport Loop keeper', color: 0x5e2533, metalness: 0, roughness: .45, clearcoat: .3, clearcoatRoughness: .3 }),
     hole: new THREE.MeshStandardMaterial({ name: 'Band hole', color: 0x050505, roughness: .9, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
     battery: new THREE.MeshPhysicalMaterial({ name: 'Battery pouch', color: 0x2a2826, metalness: .45, roughness: .45 }),
     board: new THREE.MeshStandardMaterial({ name: 'S-series SiP', color: 0x15171a, metalness: .3, roughness: .5 }),
@@ -299,7 +302,7 @@ function sweepBand(curve, side, length, hw, ht, off, material, name, bend = null
     n.normalize(); p.addScaledVector(n, off(s));
     frames.push({ s, p, t, n });
   }
-  const pos = [], idx = [], ring = [];
+  const pos = [], uv = [], idx = [], ring = [];
   // Cross-section: flat faces, fully rounded edges.
   const CS = 10;
   const section = (w, h) => {
@@ -312,7 +315,7 @@ function sweepBand(curve, side, length, hw, ht, off, material, name, bend = null
   let per = 0;
   for (const f of frames) {
     const pts = section(hw(f.s), ht(f.s)); per = pts.length;
-    for (const [x, v] of pts) { const q = f.p.clone().addScaledVector(X, x).addScaledVector(f.n, v); if (bend) q.addScaledVector(f.t, bend(x, f.s)); pos.push(q.x, q.y, q.z); }
+    for (const [x, v] of pts) { const q = f.p.clone().addScaledVector(X, x).addScaledVector(f.n, v); if (bend) q.addScaledVector(f.t, bend(x, f.s)); pos.push(q.x, q.y, q.z); uv.push(x / BAND_TILE + .5, f.s / BAND_TILE); }
     ring.push(f.p);
   }
   for (let k = 0; k < N; k++) for (let i = 0; i < per; i++) {
@@ -322,14 +325,14 @@ function sweepBand(curve, side, length, hw, ht, off, material, name, bend = null
   // End caps with their own vertices.
   for (const [k, dir] of [[0, -1], [N, 1]]) {
     const start = pos.length / 3, f = frames[k];
-    for (let i = 0; i < per; i++) pos.push(pos[(k * per + i) * 3], pos[(k * per + i) * 3 + 1], pos[(k * per + i) * 3 + 2]);
-    pos.push(f.p.x, f.p.y, f.p.z);
+    for (let i = 0; i < per; i++) { pos.push(pos[(k * per + i) * 3], pos[(k * per + i) * 3 + 1], pos[(k * per + i) * 3 + 2]); uv.push(uv[(k * per + i) * 2], uv[(k * per + i) * 2 + 1]); }
+    pos.push(f.p.x, f.p.y, f.p.z); uv.push(.5, f.s / BAND_TILE);
     const cap = [];
     for (let i = 0; i < per; i++) cap.push(start + per, start + i, start + (i + 1) % per);
     orient(cap, pos, () => f.t.clone().multiplyScalar(dir));
     idx.push(...cap);
   }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
   const mesh = new THREE.Mesh(g, material); mesh.name = name;
   const frame = (s) => frames[Math.max(0, Math.min(N, Math.round(s / length * N)))];
   return { mesh, frame };
@@ -344,10 +347,17 @@ const bandHW = (length, tip = true) => (s) => {
   const d = s - (length - BAND.body);
   return d > 0 ? Math.max(.06, w * Math.sqrt(Math.max(0, 1 - (d / BAND.body) ** 2))) : w;
 };
-const bandHT = (length) => (s) => {
-  const t = BAND.rootT + (BAND.bodyT - BAND.rootT) * smooth(.15, 1.6, s);
-  return t * (1 - .25 * smooth(length - .8, length, s));
+const bandHT = (length, bodyT = BAND.bodyT, ridge = null) => (s) => {
+  const t = BAND.rootT + (bodyT - BAND.rootT) * smooth(.15, 1.6, s);
+  return t * (1 - .25 * smooth(length - .8, length, s)) * (ridge ? 1 + ridge(s) : 1);
 };
+// Per style: strap half-thickness, and the Ocean Band's raised cross ribs.
+const STYLE_T = { sport: BAND.bodyT, ocean: .13, sportLoop: .082, braided: .135, milanese: .048 };
+const oceanRidge = (s) => s < 1.4 ? 0 : .55 * Math.pow(.5 + .5 * Math.cos(2 * Math.PI * (s - 1.4) / .46), 3);
+// A continuous loop (Solo / Sport / Milanese loops): necks at both slots.
+const loopHW = (L) => (s) => BAND.body + (BAND.root - BAND.body) * Math.max(neckF(s), neckF(L - s));
+const loopHT = (L, bodyT) => (s) => BAND.rootT + (bodyT - BAND.rootT) * Math.max(1 - smooth(.15, 1.6, s), 1 - smooth(.15, 1.6, L - s));
+const loopBend = (L) => (x, s) => neckBend(x, s) - neckBend(x, L - s);
 // The neck's end follows the case's curved top/bottom edge (corners drop back
 // into the case), so it leaves the slot flush along its whole width.
 let edgeLUT = null;
@@ -372,7 +382,11 @@ function pinStud(M, f, ht) {
 // Path pieces in (y, z).
 const ZB0 = Z_AXIS;                     // strap centreline where it leaves the slot
 const ROOT = HH - .22;                  // strap end, inside the slot
-function buildBands(M) {
+function buildBands(M, opt = bandOptions[0], mat = M.band) {
+  const style = opt.style, bodyT = STYLE_T[style] ?? BAND.bodyT;
+  const isLoop = style === 'sportLoop' || style === 'braided' || style === 'milanese';
+  const ridge = style === 'ocean' ? oceanRidge : null;
+  const hw = M.hardware;
   const top = new THREE.Group(); top.name = 'Top band';
   const bottom = new THREE.Group(); bottom.name = 'Bottom band';
   const loop = { top: new THREE.Group(), bottom: new THREE.Group() }, open = { top: new THREE.Group(), bottom: new THREE.Group() };
@@ -398,22 +412,58 @@ function buildBands(M) {
     }
     return new THREE.CatmullRomCurve3(pts.filter((_, k) => k % 6 === 0 || k === pts.length - 1), false, 'centripetal', .5);
   };
-  const thick = BAND.bodyT * 2;
-  {
-    const c = path(iT, 1, -1.35, true), L = c.getLength();
-    // Distance along the top strap where it starts to ride over the bottom one.
-    const pts = c.getSpacedPoints(400); let sOver = L;
-    for (let k = 0; k < pts.length; k++) if (pts[k].z > 3.2 && pts[k].y < 1.55) { sOver = L * k / 400; break; }
-    const off = (s) => (thick + .004) * smooth(sOver - .7, sOver, s);
-    const b = sweepBand(c, 1, L, bandHW(L), bandHT(L), off, M.band, 'Top strap (pin)', neckBend);
+  // Hardware: a rounded rectangular keeper/loop around the strap at frame f.
+  const keeper = (f, w, h, depth, material, name, lift = 0) => {
+    const outer = new THREE.Shape(), r = Math.min(h, w) * .48;
+    outer.moveTo(-w + r, -h); outer.lineTo(w - r, -h); outer.quadraticCurveTo(w, -h, w, -h + r); outer.lineTo(w, h - r); outer.quadraticCurveTo(w, h, w - r, h);
+    outer.lineTo(-w + r, h); outer.quadraticCurveTo(-w, h, -w, h - r); outer.lineTo(-w, -h + r); outer.quadraticCurveTo(-w, -h, -w + r, -h);
+    const t = Math.min(w, h) * .38, inner = new THREE.Path(), wi = w - t, hi = h - t, ri = Math.max(.01, r - t);
+    inner.moveTo(-wi + ri, -hi); inner.lineTo(-wi, -hi + ri); inner.lineTo(-wi, hi - ri); inner.quadraticCurveTo(-wi, hi, -wi + ri, hi); inner.lineTo(wi - ri, hi);
+    inner.quadraticCurveTo(wi, hi, wi, hi - ri); inner.lineTo(wi, -hi + ri); inner.quadraticCurveTo(wi, -hi, wi - ri, -hi); inner.lineTo(-wi + ri, -hi);
+    outer.holes.push(inner);
+    const g = new THREE.ExtrudeGeometry(outer, { depth, bevelEnabled: true, bevelThickness: depth * .3, bevelSize: Math.min(t * .4, .02), bevelSegments: 3, curveSegments: 10 });
+    g.translate(0, 0, -depth / 2);
+    const m = new THREE.Mesh(g, material); m.name = name;
+    const basis = new THREE.Matrix4().makeBasis(new THREE.Vector3(1, 0, 0), f.n.clone(), f.t.clone());
+    m.quaternion.setFromRotationMatrix(basis); m.position.copy(f.p).addScaledVector(f.n, lift);
+    return m;
+  };
+  // Milanese magnetic end: a flat rounded block on the strap face.
+  const magnet = (f, material) => {
+    const g = new THREE.BoxGeometry(BAND.body * 2 + .02, .09, .9, 1, 1, 1);
+    const m = new THREE.Mesh(g, material); m.name = 'Magnetic clasp';
+    const basis = new THREE.Matrix4().makeBasis(new THREE.Vector3(1, 0, 0), f.n.clone(), f.t.clone());
+    m.quaternion.setFromRotationMatrix(basis); m.position.copy(f.p).addScaledVector(f.n, bodyT + .04);
+    return m;
+  };
+  // Hole positions: every 6.2 mm, or in the Ocean Band's valleys between ribs.
+  const holeAt = (n, s0) => Array.from({ length: n }, (_, k) => ridge ? 1.4 + .46 * (Math.round((s0 - 1.4) / .46) + k + .5) : s0 + k * .62);
+  const thick = bodyT * 2;
+  if (isLoop) {
+    // One continuous loop from the top slot round the wrist to the bottom slot.
+    const pts = []; for (let i = iT, n = 0; n < M2; n++, i++) { const k = (i + M2) % M2; pts.push(dense[k].clone()); if (k === iB) break; }
+    const c = new THREE.CatmullRomCurve3(pts.filter((_, k) => k % 6 === 0 || k === pts.length - 1), false, 'centripetal', .5), L = c.getLength();
+    const b = sweepBand(c, 1, L, loopHW(L), loopHT(L, bodyT), () => 0, mat, style === 'braided' ? 'Braided Solo Loop' : style === 'milanese' ? 'Milanese Loop' : 'Sport Loop', loopBend(L));
     loop.top.add(b.mesh);
-    loop.top.add(pinStud(M, b.frame(L - 1.45), BAND.bodyT));
-  }
-  {
-    const c = path(iB, -1, .95, false), L = c.getLength();
-    const b = sweepBand(c, -1, L, bandHW(L), bandHT(L), () => 0, M.band, 'Bottom strap (holes)', neckBend);
-    loop.bottom.add(b.mesh);
-    for (let k = 0; k < 6; k++) loop.bottom.add(holeDisc(M, b.frame(3.0 + k * .62), BAND.bodyT));
+    if (style === 'milanese') loop.top.add(magnet(b.frame(L * .5), mat));
+  } else {
+    {
+      const c = path(iT, 1, -1.35, true), L = c.getLength();
+      // Distance along the top strap where it starts to ride over the bottom one.
+      const pts = c.getSpacedPoints(400); let sOver = L;
+      for (let k = 0; k < pts.length; k++) if (pts[k].z > 3.2 && pts[k].y < 1.55) { sOver = L * k / 400; break; }
+      const off = (s) => (thick + .004) * smooth(sOver - .7, sOver, s);
+      const b = sweepBand(c, 1, L, bandHW(L), bandHT(L, bodyT, ridge), off, mat, 'Top strap (pin)', neckBend);
+      loop.top.add(b.mesh);
+      loop.top.add(pinStud(M, b.frame(L - 1.45), bodyT));
+    }
+    {
+      const c = path(iB, -1, .95, false), L = c.getLength();
+      const b = sweepBand(c, -1, L, bandHW(L), bandHT(L, bodyT, ridge), () => 0, mat, 'Bottom strap (holes)', neckBend);
+      loop.bottom.add(b.mesh);
+      for (const s of holeAt(6, 3.0)) loop.bottom.add(holeDisc(M, b.frame(s), bodyT));
+      if (style === 'ocean') for (const s of [L - 2.25, L - .95]) loop.bottom.add(keeper(b.frame(s), BAND.body + .09, thick + .1, .26, hw, 'Titanium loop', thick / 2));
+    }
   }
 
   // Laid open: both straps run away from the case and curl gently back,
@@ -422,14 +472,18 @@ function buildBands(M) {
     [[ROOT, ZB0], [2.7, ZB0 + .03], [3.6, .14], [4.6, .48], [5.55, 1.05], [6.35, 1.85], [6.85 + extra * .2, 2.75 + extra]].map(([y, z]) => V(sign * y, z)), false, 'centripetal', .5);
   {
     const c = openPath(1, 0), L = c.getLength();
-    const b = sweepBand(c, 1, L, bandHW(L), bandHT(L), () => 0, M.band, 'Top strap (pin)', neckBend);
-    open.top.add(b.mesh); open.top.add(pinStud(M, b.frame(L - 1.45), BAND.bodyT));
+    const b = sweepBand(c, 1, L, bandHW(L, !isLoop), bandHT(L, bodyT, ridge), () => 0, mat, 'Top strap', neckBend);
+    open.top.add(b.mesh);
+    if (!isLoop) open.top.add(pinStud(M, b.frame(L - 1.45), bodyT));
+    if (style === 'sportLoop') open.top.add(keeper(b.frame(3.2), BAND.body + .07, bodyT + .07, .32, M.keeper, 'Sport Loop keeper'));
+    if (style === 'milanese') open.top.add(magnet(b.frame(L - .6), mat));
   }
   {
     const c = openPath(-1, .9), L = c.getLength();
-    const b = sweepBand(c, -1, L, bandHW(L), bandHT(L), () => 0, M.band, 'Bottom strap (holes)', neckBend);
+    const b = sweepBand(c, -1, L, bandHW(L, !isLoop), bandHT(L, bodyT, ridge), () => 0, mat, 'Bottom strap', neckBend);
     open.bottom.add(b.mesh);
-    for (let k = 0; k < 7; k++) open.bottom.add(holeDisc(M, b.frame(2.6 + k * .62), BAND.bodyT));
+    if (!isLoop) for (const s of holeAt(7, 2.6)) open.bottom.add(holeDisc(M, b.frame(s), bodyT));
+    if (style === 'ocean') for (const s of [1.9, 3.0]) open.bottom.add(keeper(b.frame(s), BAND.body + .09, bodyT + .08, .26, hw, 'Titanium loop'));
   }
   return { top, bottom, loop, open };
 }
@@ -532,8 +586,11 @@ export function createWatch() {
   screenMaterial.name = 'Editable screen artwork';
   const body = buildBody(M, screenMaterial);
   const internals = buildInternals(M);
-  const band = buildBands(M);
-  const bands = new THREE.Group(); bands.name = 'Sport band'; bands.add(band.top, band.bottom);
+  // Straps live in fixed holders so the exploded view and parts list keep
+  // working when the band style is swapped.
+  const bandTop = new THREE.Group(), bandBottom = new THREE.Group(); bandTop.name = 'Top band'; bandBottom.name = 'Bottom band';
+  let band = buildBands(M); bandTop.add(band.top); bandBottom.add(band.bottom);
+  const bands = new THREE.Group(); bands.name = 'Band'; bands.add(bandTop, bandBottom);
   body.crown.add(body.button);
   root.add(body.display, internals, body.case, body.crown, body.back, body.sensor, bands);
   const groups = { display: body.display, internals, case: body.case, crown: body.crown, back: body.back, sensor: body.sensor, bands };
@@ -604,8 +661,8 @@ export function createWatch() {
     body.sensor.position.z = 2.9 * t;
     body.crown.position.x = -1.3 * t;
     body.button.position.x = .45 * t;          // the button trails the crown (it rides in the crown group)
-    band.top.position.y = 2.2 * t;
-    band.bottom.position.y = -2.2 * t;
+    bandTop.position.y = 2.2 * t;
+    bandBottom.position.y = -2.2 * t;
   }
 
   // Band pose: 'loop' (worn, closed round a wrist) or 'open' (laid flat).
@@ -615,18 +672,34 @@ export function createWatch() {
     if (bandPose !== 'open') bandPose = 'loop';
     for (const k of ['top', 'bottom']) { band.loop[k].visible = bandPose === 'loop'; band.open[k].visible = bandPose === 'open'; }
   }
-  let finishHex = watchFinishes[0][1], bandHex = watchFinishes[0][2];
+  let finishHex = watchFinishes[0][1], bandHex = watchFinishes[0][2], bandId = bandOptions[0].id;
   function setBandColor(hex) { bandHex = hex; M.band.color.set(hex); M.band.sheenColor.set(hex).lerp(C(0xffffff), .5); }
-  function setFinish(hex) { finishHex = hex; applyFinish(M, hex); setBandColor(bandFor(hex)); }
+  function setFinish(hex) { finishHex = hex; applyFinish(M, hex); if (bandOption(bandId).match) setBandColor(bandFor(hex)); }
+  // Swap the band style/colourway: rebuild the strap meshes into the holders.
+  function setBand(id) {
+    const o = bandOption(id);
+    if (o.id === bandId && band) return;
+    bandId = o.id;
+    const dispose = (g) => g.traverse(m => { if (m.isMesh) m.geometry.dispose(); });
+    dispose(band.top); dispose(band.bottom); bandTop.remove(band.top); bandBottom.remove(band.bottom);
+    if (o.style === 'sport' || o.style === 'ocean') setBandColor(o.match ? bandFor(finishHex) : o.hex);
+    if (o.hardware) M.keeper.color.set(o.hardware);
+    if (o.style === 'ocean') M.hardware.color.set(o.hardware);
+    const mat = bandMaterialFor(o, M.band);
+    if (mat !== M.band) for (const t of ['map', 'normalMap', 'roughnessMap']) mat[t]?.repeat.set(1, 1);
+    band = buildBands(M, o, mat); bandTop.add(band.top); bandBottom.add(band.bottom);
+    bands.name = o.name;
+    setPose({ band: bandPose });
+  }
   setFinish(finishHex);
   setPose();
   setProgress(0);
   return {
-    root, groups, screenMaterial, screen: null, setFinish, setBandColor, setProgress, setPose, points, anchors, materials: M, bandMaterial: M.band,
+    root, groups, screenMaterial, screen: null, setFinish, setBandColor, setBand, get band() { return bandId; }, setProgress, setPose, points, anchors, materials: M, bandMaterial: M.band,
     // Portrait only; these keep the iPad-style state contract.
     setScreenOrientation() {},
-    state: () => ({ screen: 'portrait', band: bandPose, bandColor: bandHex }),
-    setState(s) { if (!s) return; if (s.band) setPose({ band: s.band }); if (s.bandColor) setBandColor(s.bandColor); },
+    state: () => ({ screen: 'portrait', band: bandPose, bandColor: bandHex, bandStyle: bandId }),
+    setState(s) { if (!s) return; if (s.bandStyle) setBand(s.bandStyle); if (s.band) setPose({ band: s.band }); if (s.bandColor && bandOption(bandId).style === 'sport') setBandColor(s.bandColor); },
     get screenOrientation() { return 'portrait'; }, get finish() { return finishHex; }, get progress() { return progress; }, get bandPose() { return bandPose; },
   };
 }

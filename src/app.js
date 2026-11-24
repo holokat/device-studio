@@ -14,6 +14,7 @@ import {devicePoints} from './cinematic.js';
 
 import {bindExport,exportGLB,saveScreenshot} from './export.js';
 import {devices,deviceFromQuery} from './devices.js';
+import { bandOptions, bandSwatch, bandLabel } from './watch/bands.js';
 
 const $=id=>document.getElementById(id), finishes=[
   ['Burgundy','#67323d','#542530','#ae7784'],['Graphite','#373739','#242528','#8b8b8c'],
@@ -66,7 +67,21 @@ async function boot(){
     $('finish-name').textContent=index<0?'Custom · '+hex.toUpperCase():finishes[index][0];
     swatches.forEach((b,i)=>{const selected=i===index;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);b.innerHTML=selected?icons.Checkmark1:'';});
     if(stage.tablet){syncIpadPortrait();syncOverlay();}
+    syncBands();
     stage.mark();thumbsStale();
+  }
+  // Apple Watch band picker: style + colourway swatches (watch only).
+  const bandButtons=[];
+  function syncBands(){
+    const watch=stage.device==='watch'?stage.built.watch:null;$('band-panel').hidden=!watch;if(!watch)return;
+    if(!bandButtons.length)for(const o of bandOptions){
+      const b=document.createElement('button');b.className='swatch band-swatch';b.title=bandLabel(o);b.setAttribute('aria-label',bandLabel(o));b.dataset.band=o.id;
+      b.onclick=()=>{watch.setBand(o.id);stage.mark();syncBands();thumbsStale();};bandButtons.push(b);$('bands').append(b);
+    }
+    const w=stage.built.watch,current=w.band;
+    for(const b of bandButtons){const o=bandOptions.find(x=>x.id===b.dataset.band),on=o.id===current;
+      b.style.background=bandSwatch(o,w.state().bandColor);b.classList.toggle('active',on);b.setAttribute('aria-pressed',on);b.innerHTML=on?icons.Checkmark1:'';}
+    const o=bandOptions.find(x=>x.id===current);$('band-name').textContent=o?bandLabel(o):'';
   }
   for(const [name,hex,low,high] of finishes){
     const b=document.createElement('button');b.className='swatch';b.title=name;b.setAttribute('aria-label',name+' titanium');
