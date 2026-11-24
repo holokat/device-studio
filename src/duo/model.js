@@ -259,10 +259,16 @@ diffuseColor.rgb *= 1. - mix(duoDim.x, duoDim.y, duoSide);`);
 
   // Stadium camera plateau (top-left seen from behind = toward the free edge).
   // Lenses take about 70% of the plateau height (Apple product imagery).
-  const pill = { x: -1.09, y: 4.36, w: 5.29, h: 2.28 };
-  const plateau = new THREE.Mesh(profileGeometry(pill.w, pill.h, pill.h / 2 - .002, [[0,.25],[0,.285],[.028,.32],[.075,.341],[.14,.35]], false), M.plateau);
+  // Raised about 3.5 mm off the back (Apple's side profile): a concave flare
+  // at the foot, a steep wall, a rounded shoulder and a flat top the lens
+  // rings stand on. `pill` is the footprint; the flat top is ~0.47 cm inside it.
+  const pill = { x: -1.12, y: 4.36, w: 5.75, h: 2.9 };
+  const PLATEAU_TOP = .612;
+  const plateau = new THREE.Mesh(profileGeometry(pill.w, pill.h, pill.h / 2 - .002, [
+    [0,.25],[0,.262],[.06,.2665],[.12,.276],[.175,.292],[.22,.316],[.255,.35],[.28,.395],[.297,.445],[.31,.495],[.325,.538],
+    [.345,.569],[.372,.591],[.405,.604],[.44,.61],[.48,PLATEAU_TOP]], false), M.plateau);
   plateau.position.set(pill.x, pill.y, 0); plateau.name = 'Camera plateau'; back.add(plateau);
-  const lensY = 4.36, lensZ = .35;
+  const lensY = 4.36, lensZ = PLATEAU_TOP;
   const optics = [];
   [[-2.605, 0, 'Fusion Ultra Wide'], [-1.055, 1, 'Fusion Main']].forEach(([x, index, label]) => {
     const unit = new THREE.Group(); unit.name = label + ' camera'; unit.position.set(x, lensY, lensZ); cameras.add(unit);
@@ -336,10 +342,10 @@ diffuseColor.rgb *= 1. - mix(duoDim.x, duoDim.y, duoSide);`);
 
   // ── Anchors for camera moves and shots ────────────────────────────
   const anchors = {
-    array: anchor(cameras, 'array', pill.x, pill.y, .55, [0, 0, 1]),
+    array: anchor(cameras, 'array', pill.x, pill.y, PLATEAU_TOP + .2, [0, 0, 1]),
     ultra: anchor(cameras, 'ultra', -2.605, lensY, lensZ + .191, [0, 0, 1]),
     main: anchor(cameras, 'main', -1.055, lensY, lensZ + .191, [0, 0, 1]),
-    flash: anchor(cameras, 'flash', .55, 4.3, .4, [0, 0, 1]),
+    flash: anchor(cameras, 'flash', .55, 4.3, PLATEAU_TOP + .05, [0, 0, 1]),
     side: anchor(B.frame, 'side button', -HW, 1.62, 0, [-1, 0, 0]),
     buttons: anchor(B.frame, 'top buttons', -.77, HH, 0, [0, 1, 0]),
     outerCam: anchor(outer, 'outer camera', cam.x, cam.y, .27, [0, 0, 1]),

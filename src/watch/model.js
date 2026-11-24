@@ -82,12 +82,14 @@ const CROWN = { y: HH - 1.5, r: .33, len: .245, ridges: 44 };
 const BUTTON = { y: HH - 3.0, len: 1.3, across: .26 };
 const MIC = { y: (CROWN.y - CROWN.r + BUTTON.y + BUTTON.len / 2) / 2 };
 const SPEAKER = { y: -.35, len: 1.5 };
-const SLOT = { w: 2.5, h: .34 };
+const SLOT = { w: 2.84, h: .3 };
 const CRYSTAL = { r: 1.335 };
 const Z_CRYSTAL_EDGE = Z_BACK - .006, Z_CRYSTAL_TOP = HT;
 const domeZ = (r) => Z_CRYSTAL_EDGE + (Z_CRYSTAL_TOP - Z_CRYSTAL_EDGE) * Math.pow(Math.max(0, 1 - (r / CRYSTAL.r) ** 2), .5);
 const RELEASE = { y: HH - .46, len: .8, across: .2 };
-const BAND = { root: 1.2, body: 1.03, rootT: .145, bodyT: .118 };
+// Half-widths: the neck fills the slot nearly edge to edge, then narrows to
+// the strap in a concave sweep over NECK cm (as on Apple's sport band).
+const BAND = { root: 1.5, body: 1.03, rootT: .145, bodyT: .118, neck: 1.15 };
 
 // Finishes: [name, anodised case, default sport band]. Gold is the default.
 // Jet Black is polished; the others bead-blasted.
@@ -287,7 +289,7 @@ function knurledCrown(M) {
 // face consistent). Width / thickness / outward offset are functions of the
 // arc length s. Returns { mesh, frame(s) } where frame gives the centre,
 // tangent and outward normal for placing holes and the pin.
-function sweepBand(curve, side, length, hw, ht, off, material, name) {
+function sweepBand(curve, side, length, hw, ht, off, material, name, bend = null) {
   const N = Math.max(24, Math.round(length / .04)), X = new THREE.Vector3(1, 0, 0);
   const L = curve.getLength(), frames = [];
   for (let k = 0; k <= N; k++) {
@@ -310,7 +312,7 @@ function sweepBand(curve, side, length, hw, ht, off, material, name) {
   let per = 0;
   for (const f of frames) {
     const pts = section(hw(f.s), ht(f.s)); per = pts.length;
-    for (const [x, v] of pts) { const q = f.p.clone().addScaledVector(X, x).addScaledVector(f.n, v); pos.push(q.x, q.y, q.z); }
+    for (const [x, v] of pts) { const q = f.p.clone().addScaledVector(X, x).addScaledVector(f.n, v); if (bend) q.addScaledVector(f.t, bend(x, f.s)); pos.push(q.x, q.y, q.z); }
     ring.push(f.p);
   }
   for (let k = 0; k < N; k++) for (let i = 0; i < per; i++) {
@@ -334,8 +336,10 @@ function sweepBand(curve, side, length, hw, ht, off, material, name) {
 }
 const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 // Width / thickness: flared where the strap leaves the slot, rounded tip.
+// Concave neck: steep where it leaves the case, easing into the strap.
+const neckF = (s) => { const t = THREE.MathUtils.clamp((s - .12) / BAND.neck, 0, 1); return (1 - t) ** 2.2; };
 const bandHW = (length, tip = true) => (s) => {
-  const w = BAND.root + (BAND.body - BAND.root) * smooth(.15, 1.6, s);
+  const w = BAND.body + (BAND.root - BAND.body) * neckF(s);
   if (!tip) return w;
   const d = s - (length - BAND.body);
   return d > 0 ? Math.max(.06, w * Math.sqrt(Math.max(0, 1 - (d / BAND.body) ** 2))) : w;
@@ -344,6 +348,14 @@ const bandHT = (length) => (s) => {
   const t = BAND.rootT + (BAND.bodyT - BAND.rootT) * smooth(.15, 1.6, s);
   return t * (1 - .25 * smooth(length - .8, length, s));
 };
+// The neck's end follows the case's curved top/bottom edge (corners drop back
+// into the case), so it leaves the slot flush along its whole width.
+let edgeLUT = null;
+function neckBend(x, s) {
+  if (!edgeLUT) { const inset = insetAt(Z_AXIS), y0 = edgeY(0, inset); edgeLUT = Array.from({ length: 65 }, (_, i) => edgeY(i / 64 * (HW - inset - .01), inset) - y0); edgeLUT.max = HW - insetAt(Z_AXIS) - .01; }
+  const u = Math.min(1, Math.abs(x) / edgeLUT.max) * 64, i = Math.min(63, Math.floor(u)), d = edgeLUT[i] + (edgeLUT[i + 1] - edgeLUT[i]) * (u - i);
+  return d * (1 - smooth(.3, .3 + BAND.neck * .8, s));
+}
 function holeDisc(M, f, ht, r = .065) {
   const m = new THREE.Mesh(new THREE.CircleGeometry(r, 24), M.hole); m.name = 'Band hole';
   m.position.copy(f.p).addScaledVector(f.n, ht + .0015);
@@ -393,13 +405,13 @@ function buildBands(M) {
     const pts = c.getSpacedPoints(400); let sOver = L;
     for (let k = 0; k < pts.length; k++) if (pts[k].z > 3.2 && pts[k].y < 1.55) { sOver = L * k / 400; break; }
     const off = (s) => (thick + .004) * smooth(sOver - .7, sOver, s);
-    const b = sweepBand(c, 1, L, bandHW(L), bandHT(L), off, M.band, 'Top strap (pin)');
+    const b = sweepBand(c, 1, L, bandHW(L), bandHT(L), off, M.band, 'Top strap (pin)', neckBend);
     loop.top.add(b.mesh);
     loop.top.add(pinStud(M, b.frame(L - 1.45), BAND.bodyT));
   }
   {
     const c = path(iB, -1, .95, false), L = c.getLength();
-    const b = sweepBand(c, -1, L, bandHW(L), bandHT(L), () => 0, M.band, 'Bottom strap (holes)');
+    const b = sweepBand(c, -1, L, bandHW(L), bandHT(L), () => 0, M.band, 'Bottom strap (holes)', neckBend);
     loop.bottom.add(b.mesh);
     for (let k = 0; k < 6; k++) loop.bottom.add(holeDisc(M, b.frame(3.0 + k * .62), BAND.bodyT));
   }
@@ -410,12 +422,12 @@ function buildBands(M) {
     [[ROOT, ZB0], [2.7, ZB0 + .03], [3.6, .14], [4.6, .48], [5.55, 1.05], [6.35, 1.85], [6.85 + extra * .2, 2.75 + extra]].map(([y, z]) => V(sign * y, z)), false, 'centripetal', .5);
   {
     const c = openPath(1, 0), L = c.getLength();
-    const b = sweepBand(c, 1, L, bandHW(L), bandHT(L), () => 0, M.band, 'Top strap (pin)');
+    const b = sweepBand(c, 1, L, bandHW(L), bandHT(L), () => 0, M.band, 'Top strap (pin)', neckBend);
     open.top.add(b.mesh); open.top.add(pinStud(M, b.frame(L - 1.45), BAND.bodyT));
   }
   {
     const c = openPath(-1, .9), L = c.getLength();
-    const b = sweepBand(c, -1, L, bandHW(L), bandHT(L), () => 0, M.band, 'Bottom strap (holes)');
+    const b = sweepBand(c, -1, L, bandHW(L), bandHT(L), () => 0, M.band, 'Bottom strap (holes)', neckBend);
     open.bottom.add(b.mesh);
     for (let k = 0; k < 7; k++) open.bottom.add(holeDisc(M, b.frame(2.6 + k * .62), BAND.bodyT));
   }
