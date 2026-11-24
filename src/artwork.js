@@ -7,7 +7,7 @@ const titles={presentation:'Presentation',contour:'Contour',mist:'Soft gradient'
 
 export function makeWallpaper(kind, hex, W=640, H=1360, label='iPhone 18 Pro', presentation=null){
   // A device can supply its own Presentation artwork (the iPad home screen).
-  if(kind==='presentation'&&presentation)return presentation(W,H);
+  if(kind==='presentation'&&presentation)return presentation(W,H,hex);
   // Farbound wallpaper lock screens, drawn with a long edge of at least 2048 px.
   const fb=farboundId(kind);
   if(fb){const k=Math.max(1,2048/Math.max(W,H));return farboundScreen(fb,Math.round(W*k),Math.round(H*k));}
@@ -156,5 +156,5 @@ export function screenArtwork(material,onChange){
       texture.offset.set((1-texture.repeat.x)/2,(1-texture.repeat.y)/2);
     }
   }
-  return {get mode(){return mode;},get pending(){return pending;},setLayer(img){if(img===layer)return;layer=img;preset(mode);applyUV();},setTarget,preset(value){preset(value);applyUV();},async upload(file){const ok=await upload(file);applyUV();return ok;},finish(hex){finish=hex;if(mode==='contour')preset(mode);},get playing(){return mode==='custom'&&!!asset?.video&&!asset.video.paused;},get media(){return this.playing?asset.video:null;}};
+  return {get mode(){return mode;},get pending(){return pending;},setLayer(img){if(img===layer)return;layer=img;preset(mode);applyUV();},setTarget,preset(value){preset(value);applyUV();},async upload(file){const ok=await upload(file);applyUV();return ok;},finish(hex){finish=hex;if(mode==='contour'||(mode==='presentation'&&target.finishArt)){preset(mode);applyUV();}},get playing(){return mode==='custom'&&!!asset?.video&&!asset.video.paused;},get media(){return this.playing?asset.video:null;}};
 }

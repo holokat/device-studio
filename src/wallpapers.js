@@ -10,23 +10,28 @@ export const presentationWallpapers = {
   pro: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
   i17: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
   air: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
-  pixel: { name: 'Terracotta Jupiter', file: 'terracotta-jupiter-iphone-pro-max.jpg', fy: .5 },
+  pixel: { name: 'Dunes', file: 'pixel-dunes-obsidian.jpg', fy: .5, finishes: { Obsidian: 'pixel-dunes-obsidian.jpg', Canyon: 'pixel-dunes-canyon.jpg', Olive: 'pixel-dunes-olive.jpg', Fog: 'pixel-dunes-fog.jpg' } },
   duo: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
   'duo-cover': { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
   ipad: { name: 'Ringed giant over the lake', file: 'ringed-giant-lake-ipad.jpg', fy: .5 },
   'ipad-portrait': { name: 'Ringed giant over the lake', file: 'ringed-giant-lake-ipad.jpg', fy: .5 },
   // Mac displays: macOS desktops made for the studio (menu bar and Dock are part of the picture).
-  mbp: { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5 },
+  mbp: { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Silver: 'silver-loops-macbook.jpg' } },
   sdx: { name: 'Spectrum folds', file: 'spectrum-folds-xdr.jpg', fy: .5 },
-  imac: { name: 'Lilac ribbons', file: 'lilac-ribbons-imac.jpg', fy: .5 },
+  imac: { name: 'Ribbons', file: 'lilac-ribbons-imac.jpg', fy: .5, finishes: { Blue: 'ribbons-imac-blue.jpg', Purple: 'lilac-ribbons-imac.jpg', Pink: 'ribbons-imac-pink.jpg', Orange: 'ribbons-imac-orange.jpg', Yellow: 'ribbons-imac-yellow.jpg', Green: 'ribbons-imac-green.jpg', Silver: 'ribbons-imac-silver.jpg' } },
 };
 const url = (w) => w.path || 'screens/wallpapers/' + w.file;
-export function preloadWallpapers() { for (const w of Object.values(presentationWallpapers)) screenImage(url(w)); }
+// A wallpaper can come in one file per device finish (`finishes: {name: file}`).
+const pick = (w, finish) => (finish && w.finishes?.[finish] ? { ...w, file: w.finishes[finish], path: null } : w);
+export function preloadWallpapers() {
+  for (const w of Object.values(presentationWallpapers)) { screenImage(url(w)); for (const f of Object.keys(w.finishes || {})) screenImage(url(pick(w, f))); }
+}
 
 // A canvas of the device's wallpaper at the target aspect, drawn with a long
 // edge of at least 2600 px. `canvas.pending` is set while the image loads.
-export function wallpaperCanvas(key, W, H) {
-  const w = presentationWallpapers[key], k = Math.max(1, 2600 / Math.max(W, H));
+// `finish` (a finish name) picks that finish's version when there is one.
+export function wallpaperCanvas(key, W, H, finish = null) {
+  const w = presentationWallpapers[key] && pick(presentationWallpapers[key], finish), k = Math.max(1, 2600 / Math.max(W, H));
   const c = document.createElement('canvas'); c.width = Math.round(W * k); c.height = Math.round(H * k);
   const ctx = c.getContext('2d'); ctx.fillStyle = '#05060b'; ctx.fillRect(0, 0, c.width, c.height);
   const img = w && screenImage(url(w));

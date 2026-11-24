@@ -174,7 +174,7 @@ dialog{border:0;border-radius:24px;background:#1f1f21;padding:24px}
 [data-theme=light] .seg-box>button[aria-pressed=true],[data-theme=light] .seg-box>button[aria-selected=true],
 .chips button[aria-pressed=true],[data-theme=light] .chips button[aria-pressed=true],
 .chip-grid button[aria-pressed=true],[data-theme=light] .chip-grid button[aria-pressed=true]{background:var(--blue);color:#fff}
-.seg-box .tag{color:inherit}
+.seg-box>button[aria-pressed=true] .tag,[data-theme=light] .seg-box>button[aria-pressed=true] .tag{background:rgba(255,255,255,.22);color:#fff}
 /* Light mode sliders and play bar: a light track with a blue fill instead of near-black. */
 [data-theme=light] input[type=range]{background:linear-gradient(to right,var(--blue) var(--progress),#e0e0e5 var(--progress))}
 [data-theme=light] input[type=range]::-webkit-slider-thumb{background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.18)}

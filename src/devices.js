@@ -11,6 +11,8 @@ import { sdxFinishes, SDX_ASPECT } from './studiodisplay/model.js';
 import { pixelFinishes, PIXEL_ASPECT } from './pixel/model.js';
 import { imacFinishes, IMAC_ASPECT } from './imac/model.js';
 
+// Name of the finish with this hex (for wallpapers that come in one version per finish).
+const finishName = (list, hex) => list.find((f) => f[1].toLowerCase() === String(hex).toLowerCase())?.[0] ?? null;
 const swatch = (low, hex, high) => 'linear-gradient(132deg,' + low + ' 0%,' + hex + ' 35%,' + high + ' 69%,' + hex + ' 100%)';
 
 export const devices = {
@@ -100,7 +102,7 @@ export const devices = {
     finishes: pixelFinishes.map(([name, back, frame, ring]) => [name, back, swatch(frame, back, ring)]),
     shots: deviceShots.pixel, parts: deviceParts.pixel, points: 'live',
     // 1280 × 2856 px panel, drawn at half size.
-    artwork: { width: 640, height: 1428, aspect: PIXEL_ASPECT, label: 'Pixel 11 Pro', presentation: (W, H) => wallpaperCanvas('pixel', W, H) },
+    artwork: { width: 640, height: 1428, aspect: PIXEL_ASPECT, label: 'Pixel 11 Pro', finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('pixel', W, H, finishName(pixelFinishes, hex)) },
     overlay: { style: 'phone' },
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
@@ -115,7 +117,7 @@ export const devices = {
     finishes: mbpFinishes.map(([name, hex]) => [name, hex, swatch(hex, hex, name === 'Silver' ? '#ffffff' : '#5a595c')]),
     shots: deviceShots.mbp, parts: deviceParts.mbp, points: 'live',
     // 3024 × 1964 Liquid Retina XDR panel (with the notch strip), drawn at half size.
-    artwork: { width: 1512, height: 982, aspect: MBP_ASPECT, label: 'MacBook Pro', layout: 1512, presentation: (W, H) => wallpaperCanvas('mbp', W, H) },
+    artwork: { width: 1512, height: 982, aspect: MBP_ASPECT, label: 'MacBook Pro', layout: 1512, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('mbp', W, H, finishName(mbpFinishes, hex)) },
     assembly: {
       title: 'Lid', from: 'Closed', to: 'Open', toAction: 'Open', fromAction: 'Close',
       toing: 'Opening', froming: 'Closing', clipTo: 'Open lid', clipFrom: 'Close lid', playTo: 'Play opening', playFrom: 'Play closing',
@@ -147,7 +149,7 @@ export const devices = {
     finishes: imacFinishes.map(([name, back, chin, stand]) => [name, back, swatch(stand, back, chin)]),
     shots: deviceShots.imac, parts: deviceParts.imac, points: 'live',
     // 4480 × 2520 panel, drawn at 1/4 size; laid out like a 2240 pt desktop.
-    artwork: { width: 1120, height: 630, aspect: IMAC_ASPECT, label: 'iMac', layout: 2240, presentation: (W, H) => wallpaperCanvas('imac', W, H), presentationLabel: ['Presentation', 'Lilac ribbons'] },
+    artwork: { width: 1120, height: 630, aspect: IMAC_ASPECT, label: 'iMac', layout: 2240, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('imac', W, H, finishName(imacFinishes, hex)), presentationLabel: ['Presentation', 'Ribbons wallpaper'] },
     presets: false,
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
