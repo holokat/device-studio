@@ -420,12 +420,25 @@ async function boot(){
       // A custom colour carries over; a named finish switches to the device's own.
       finish(wasCustom?previous:savedFinish[id]||d.finishes.find(f=>f[0]===d.defaultFinish)[1]);
       for(const b of picker?.querySelectorAll('[data-device]')||[])b.setAttribute('aria-pressed',String(b.dataset.device===id));
+      {const b=picker?.querySelector(`[data-device="${id}"]`);if(b){$('device-trigger-name').textContent=d.name;$('device-trigger-img').src=b.querySelector('img').getAttribute('src');}}
       document.title=d.name+' · Model studio';
       const url=new URL(location.href);if(id!=='pro')url.searchParams.set('device',id);else url.searchParams.delete('device');if(!initial)url.searchParams.delete('shot');history.replaceState(null,'',url);
       lastSelected='hero';setShot('hero');relabel();filterMoves();
       thumbsStale();
     }
-    for(const b of picker?.querySelectorAll('[data-device]')||[])b.onclick=()=>setDevice(b.dataset.device);
+    // Device menu: a trigger with the current device, opening a grid of previews.
+    const trigger=$('device-trigger');
+    const openMenu=open=>{picker.hidden=!open;trigger.setAttribute('aria-expanded',String(open));if(open)(picker.querySelector('[aria-pressed=true]')||picker.querySelector('button'))?.focus();};
+    trigger.onclick=e=>{e.stopPropagation();openMenu(picker.hidden);};
+    document.addEventListener('pointerdown',e=>{if(!picker.hidden&&!picker.contains(e.target)&&!trigger.contains(e.target))openMenu(false);});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!picker.hidden){openMenu(false);trigger.focus();}});
+    picker.addEventListener('keydown',e=>{
+      if(!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+      const items=[...picker.querySelectorAll('[data-device]')],i=items.indexOf(document.activeElement);
+      const n=e.key==='Home'?0:e.key==='End'?items.length-1:(i+(e.key==='ArrowDown'||e.key==='ArrowRight'?1:-1)+items.length)%items.length;
+      items[n].focus();e.preventDefault();
+    });
+    for(const b of picker?.querySelectorAll('[data-device]')||[])b.onclick=()=>{openMenu(false);setDevice(b.dataset.device);};
     if(deviceFromQuery()!=='pro')setDevice(deviceFromQuery(),true);else art.setTarget(stage.exterior.screenMaterial,devices.pro.artwork);
     if(typeof __STUDIO_QA__!=='undefined'&&__STUDIO_QA__)window.studioDevice=setDevice;
   }
