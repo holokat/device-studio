@@ -3,6 +3,7 @@ import { deviceShots, deviceParts } from './stage.js';
 import { devicePoints } from './cinematic.js';
 import { duoFinishes, INNER_ASPECT } from './duo/model.js';
 import { ipadFinishes, IPAD_ASPECT } from './ipad/model.js';
+import { ipadMiniFinishes, IPAD_MINI_ASPECT } from './ipadmini/model.js';
 import { airFinishes, AIR_ASPECT } from './air/model.js';
 import { wallpaperCanvas } from './wallpapers.js';
 import { i17Finishes, I17_ASPECT } from './i17/model.js';
@@ -65,7 +66,22 @@ export const devices = {
       slider: 'Assembly separation', partial: 'Assembly view',
     },
     fineprint: 'Exterior from Apple specifications and product imagery. The rear panel split and interior layout are illustrative.',
+  },  ipadmini: {
+    id: 'ipadmini', name: 'iPad mini', file: 'iPad-mini',
+    finishTitle: 'Finish', finishCaption: 'Bead-blasted anodized aluminium', defaultFinish: 'Space Gray',
+    finishes: ipadMiniFinishes.map(([name, hex, , low, high]) => [name, hex, swatch(low, hex, high)]),
+    shots: deviceShots.ipadmini, parts: deviceParts.ipadmini, points: 'live',
+    // Landscape panel, 2266 × 1488 px, drawn at 0.8×. Presentation = the MacBook Pro loops wallpaper.
+    artwork: { width: 1813, height: 1190, aspect: IPAD_MINI_ASPECT, label: 'iPad mini', layout: 1133, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('ipadmini', W, H, finishName(ipadMiniFinishes, hex)) },
+    overlay: { style: 'tablet' },
+    assembly: {
+      title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
+      toing: 'Exploding', froming: 'Assembling', clipTo: 'Disassemble', clipFrom: 'Reassemble', playTo: 'Play disassembly', playFrom: 'Play reassembly',
+      slider: 'Assembly separation', partial: 'Assembly view',
+    },
+    fineprint: 'Exterior from Apple specifications. The rear panel split and interior layout are illustrative.',
   },
+
   air: {
     id: 'air', name: 'iPhone Air', file: 'iPhone-Air',
     finishTitle: 'Finish', finishCaption: 'Titanium frame · glass back', defaultFinish: 'Sky Blue',

@@ -7,6 +7,8 @@ import { createDuo } from './duo/model.js';
 import { duoShots, duoParts } from './duo/views.js';
 import { createIpad } from './ipad/model.js';
 import { ipadShots, ipadParts } from './ipad/views.js';
+import { createIpadMini } from './ipadmini/model.js';
+import { ipadMiniShots, ipadMiniParts } from './ipadmini/views.js';
 import { createAir } from './air/model.js';
 import { airShots, airParts } from './air/views.js';
 import { createI17 } from './i17/model.js';
@@ -21,7 +23,7 @@ import { createImac } from './imac/model.js';
 import { imacShots, imacParts } from './imac/views.js';
 // Devices built like the iPad: a create() module plus a shots table using
 // rot / dir / at / height. Each is created on first use.
-const GENERIC={ipad:{create:createIpad,shots:ipadShots,spread:[[1.05,.42,-.78],30,44]},air:{create:createAir,shots:null,compositions:true},i17:{create:createI17,shots:null,compositions:true},pixel:{create:createPixel,shots:null,compositions:true},mbp:{create:createMacbook,shots:mbpShots,spread:[[-.62,.42,-1],31,46]},sdx:{create:createStudioDisplay,shots:sdxShots,spread:[[-.62,.16,-1],60,74]},imac:{create:createImac,shots:imacShots,spread:[[-.62,.2,-1],60,76]}};
+const GENERIC={ipad:{create:createIpad,shots:ipadShots,spread:[[1.05,.42,-.78],30,44]},ipadmini:{create:createIpadMini,shots:ipadMiniShots,spread:[[1.05,.42,-.78],24,35]},air:{create:createAir,shots:null,compositions:true},i17:{create:createI17,shots:null,compositions:true},pixel:{create:createPixel,shots:null,compositions:true},mbp:{create:createMacbook,shots:mbpShots,spread:[[-.62,.42,-1],31,46]},sdx:{create:createStudioDisplay,shots:sdxShots,spread:[[-.62,.16,-1],60,74]},imac:{create:createImac,shots:imacShots,spread:[[-.62,.2,-1],60,76]}};
 
 export const shots={
   hero:{shelf:'compositions',title:'Free orbit',label:'Free orbit',target:[0,.03,0],dir:[-.53,.24,1],height:18.8,roll:-.245},
@@ -41,8 +43,8 @@ const {hero:i17Hero,front:i17Front,...i17Rest}=i17Shots;
 GENERIC.i17.shots={hero:i17Hero,front:i17Front,...compositions,...i17Rest};
 const {hero:pxHero,front:pxFront,...pxRest}=pixelShots;
 GENERIC.pixel.shots={hero:pxHero,front:pxFront,...compositions,...pxRest};
-export const deviceShots={pro:{...shots},duo:duoShots,ipad:ipadShots,air:GENERIC.air.shots,i17:GENERIC.i17.shots,pixel:GENERIC.pixel.shots,mbp:mbpShots,sdx:sdxShots,imac:imacShots};
-export const deviceParts={pro:{...parts},duo:duoParts,ipad:ipadParts,air:airParts,i17:i17Parts,pixel:pixelParts,mbp:mbpParts,sdx:sdxParts,imac:imacParts};
+export const deviceShots={pro:{...shots},duo:duoShots,ipad:ipadShots,ipadmini:ipadMiniShots,air:GENERIC.air.shots,i17:GENERIC.i17.shots,pixel:GENERIC.pixel.shots,mbp:mbpShots,sdx:sdxShots,imac:imacShots};
+export const deviceParts={pro:{...parts},duo:duoParts,ipad:ipadParts,ipadmini:ipadMiniParts,air:airParts,i17:i17Parts,pixel:pixelParts,mbp:mbpParts,sdx:sdxParts,imac:imacParts};
 const PRO_FAMILY=new Set(['pro']);
 const palettes={noir:['#26272b','#0e0e10','#060607'],studio:['#aaa','#aaa','#aaa'],stone:['#eae7e1','#c7c2bb','#b5afa7'],graphite:['#494847','#272727','#1e1e1e'],white:['#ececf0','#e5e5ea','#d9d9df']};
 
@@ -250,5 +252,5 @@ export function createStage(canvas,invalidate){
   function orbit(angle){const offset=savedPos.copy(camera.position).sub(control.target).applyAxisAngle(dummy.set(0,1,0),angle);camera.position.copy(control.target).add(offset);control.update();mark();}
   function zoom(factor){const offset=savedTarget.copy(camera.position).sub(control.target);offset.setLength(THREE.MathUtils.clamp(offset.length()*factor,control.minDistance,control.maxDistance));camera.position.copy(control.target).add(offset);control.update();mark();}
   resize();configureShot('hero');
-  return {customView(){currentShot='';},renderer,canvas,scene,camera,get model(){return model;},get groups(){return groups;},get exterior(){return exterior;},get device(){return device;},get duo(){return duo;},get ipad(){return built.ipad;},get built(){return built;},get shots(){return deviceShots[device];},get parts(){return deviceParts[device];},setDevice,points,thumbnail,control,render,mark,resize,setProgress,configureShot,revealAssembly,spreadView,setBackdrop,setLighting,beginOutput,snapshot,restore,orbit,zoom,get progress(){return progress;},get shot(){return currentShot;},get composition(){return layouts.current;},get backdrop(){return backdrop;},get rig(){return rig;},focusOptic,get lensFocus(){return lensFocus;}};
+  return {customView(){currentShot='';},renderer,canvas,scene,camera,get model(){return model;},get groups(){return groups;},get exterior(){return exterior;},get device(){return device;},get duo(){return duo;},get ipad(){return built.ipad;},get tablet(){return device==='ipad'||device==='ipadmini'?built[device]:null;},get built(){return built;},get shots(){return deviceShots[device];},get parts(){return deviceParts[device];},setDevice,points,thumbnail,control,render,mark,resize,setProgress,configureShot,revealAssembly,spreadView,setBackdrop,setLighting,beginOutput,snapshot,restore,orbit,zoom,get progress(){return progress;},get shot(){return currentShot;},get composition(){return layouts.current;},get backdrop(){return backdrop;},get rig(){return rig;},focusOptic,get lensFocus(){return lensFocus;}};
 }

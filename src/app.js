@@ -65,7 +65,7 @@ async function boot(){
     const index=finishes.findIndex(f=>f[1].toLowerCase()===hex.toLowerCase());
     $('finish-name').textContent=index<0?'Custom · '+hex.toUpperCase():finishes[index][0];
     swatches.forEach((b,i)=>{const selected=i===index;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);b.innerHTML=selected?icons.Checkmark1:'';});
-    if(stage.device==='ipad'){syncIpadPortrait();syncOverlay();}
+    if(stage.tablet){syncIpadPortrait();syncOverlay();}
     stage.mark();thumbsStale();
   }
   for(const [name,hex,low,high] of finishes){
@@ -247,7 +247,9 @@ async function boot(){
   const syncCover=()=>{const pres=art.mode==='presentation',id=pres?'presentation':farboundId(art.mode);if(!stage.duo||coverShown===(id||'default')&&!syncCover.stale)return;const c=pres?wallpaperCanvas('duo-cover',1398,2034):id?farboundScreen(id,1398,2034):null;syncCover.stale=!!c?.pending;coverShown=id||'default';stage.duo.setCoverArt(c);stage.mark();};
   // iPad upright views get portrait artwork: the portrait home screen or a
   // portrait Farbound lock screen. Other presets fall back to a centre crop.
-  const syncIpadPortrait=()=>{if(!stage.ipad)return;const fb=farboundId(art.mode);const c=art.mode==='presentation'?wallpaperCanvas('ipad-portrait',1312,1888,$('finish-name').textContent):fb?farboundScreen(fb,1312,1888):null;stage.ipad.setPortraitArt(c);stage.mark();};
+  // Tablets keep separate portrait artwork (width × height of the portrait panel).
+  const PORTRAIT={ipad:[1312,1888],ipadmini:[1190,1813]};
+  const syncIpadPortrait=()=>{const t=stage.tablet;if(!t)return;const [pw,ph]=PORTRAIT[stage.device],fb=farboundId(art.mode);const c=art.mode==='presentation'?wallpaperCanvas(stage.device+'-portrait',pw,ph,$('finish-name').textContent):fb?farboundScreen(fb,pw,ph):null;t.setPortraitArt(c);stage.mark();};
   // Vector status bar and FARBOUND wordmark over the Presentation wallpaper.
   preloadWallpapers();
   const screenOverlay=createScreenOverlay(),coverOverlay=createScreenOverlay();
@@ -255,7 +257,7 @@ async function boot(){
   // SVG presentation layer: vector parts as geometry on the glass, the rest as a
   // bitmap composited into the screen texture (see svg-layer.js).
   const layerOverlay=createScreenOverlay();let layer=null,layerFit=null,layerVersion=0;
-  function screenFrame(){const d=devices[stage.device],portrait=stage.device==='ipad'&&stage.ipad?.state().screen==='portrait';return portrait?[1312,1888]:[d.artwork.width,d.artwork.height];}
+  function screenFrame(){const d=devices[stage.device],portrait=stage.tablet?.state().screen==='portrait';return portrait?PORTRAIT[stage.device]:[d.artwork.width,d.artwork.height];}
   function syncLayer(){
     if(!layer){layerOverlay.sync(null);art.setLayer(null);return;}
     const [W,H]=screenFrame(),key=layerVersion+':'+W+'x'+H;
@@ -280,8 +282,8 @@ async function boot(){
     thumbsStale();syncLayer?.();
     const d=devices[stage.device],on=art.mode==='presentation'&&!!d?.overlay;
     if(!on){screenOverlay.sync(null);coverOverlay.sync(null);stage.mark();return;}
-    const portrait=stage.device==='ipad'&&stage.ipad?.state().screen==='portrait';
-    const [W,H]=portrait?[1312,1888]:[d.artwork.width,d.artwork.height];
+    const portrait=stage.tablet?.state().screen==='portrait';
+    const [W,H]=portrait?PORTRAIT[stage.device]:[d.artwork.width,d.artwork.height];
     const pts=stage.points?.()||devicePoints[stage.device]||null,isl=pts?.island;
     const island=isl?.isVector3?isl:isl?.p||null;
     screenOverlay.sync({root:stage.model,model:stage.model,material:stage.exterior.screenMaterial,W,H,style:portrait?'phone':d.overlay.style,wordmark:false,color:wallpaperInk(stage.device,$('finish-name').textContent),island:d.overlay.style==='phone'?island:null});

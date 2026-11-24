@@ -13,6 +13,8 @@ export const presentationWallpapers = {
   pixel: { name: 'Dunes', file: 'pixel-dunes-obsidian.jpg', fy: .5, finishes: { Obsidian: 'pixel-dunes-obsidian.jpg', Canyon: 'pixel-dunes-canyon.jpg', Olive: 'pixel-dunes-olive.jpg', Fog: 'pixel-dunes-fog.jpg' } },
   duo: { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
   'duo-cover': { name: 'Silver ribbons', file: 'silver-ribbons-iphone.jpg', fy: .5, ink: '#111113' },
+  ipadmini: { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Starlight: 'silver-loops-macbook.jpg' }, finishInk: { Starlight: '#111113' } },
+  'ipadmini-portrait': { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Starlight: 'silver-loops-macbook.jpg' }, finishInk: { Starlight: '#111113' } },
   // The iPad shares the MacBook Pro's loops (lighter loops for the pale finishes).
   ipad: { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Silver: 'silver-loops-macbook.jpg', Starlight: 'silver-loops-macbook.jpg' }, finishInk: { Silver: '#111113', Starlight: '#111113' } },
   'ipad-portrait': { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Silver: 'silver-loops-macbook.jpg', Starlight: 'silver-loops-macbook.jpg' }, finishInk: { Silver: '#111113', Starlight: '#111113' } },
