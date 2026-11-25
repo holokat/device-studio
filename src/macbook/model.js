@@ -150,7 +150,7 @@ function makeMaterials() {
     shell: alu('Anodized aluminium', .48, 1.1, .6),
     lid: alu('Anodized aluminium lid', .48, 1.1, .6),
     grille: alu('Speaker perforation', .5, 1.2, .65, { map: grilleMap, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
-    chamfer: new THREE.MeshPhysicalMaterial({ name: 'Diamond-cut chamfer', color: 0x2f2d30, metalness: .95, roughness: .22, envMapIntensity: 2.2, side: THREE.DoubleSide }),
+    chamfer: new THREE.MeshPhysicalMaterial({ name: 'Diamond-cut chamfer', color: 0x2f2d30, metalness: .85, roughness: .4, envMapIntensity: .7, side: THREE.DoubleSide }),
     arm: alu('Hinge arm', .34, 1.6, .78),
     logo: new THREE.MeshPhysicalMaterial({ name: 'Mirror insignia', color: 0x2a2a2c, metalness: 1, roughness: .07, clearcoat: .6, clearcoatRoughness: .05, envMapIntensity: 2.2,
       polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
@@ -164,9 +164,11 @@ function makeMaterials() {
     wellWall: dark('Keyboard well wall', 0x101012, .55, .5, { side: THREE.DoubleSide }),
     trackpad: new THREE.MeshPhysicalMaterial({ name: 'Force Touch trackpad glass', color: 0x2b2a2c, metalness: .05, roughness: .36, clearcoat: .45, clearcoatRoughness: .3, envMapIntensity: .7 }),
     gap: dark('Trackpad gap', 0x050506, .8, .1, { side: THREE.DoubleSide }),
-    portDark: dark('Port interior', 0x040405, .7, .2, { polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }),
+    // Port openings are painted with their own depth: the upper inner wall in
+    // shadow, a black core, and the lower inner wall catching the top light.
+    portDark: new THREE.MeshBasicMaterial({ name: 'Port interior', color: 0xffffff, map: recessMap(), polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }),
     portFace: new THREE.MeshPhysicalMaterial({ name: 'Recessed port face', color: 0x1c1c1e, metalness: .7, roughness: .4, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
-    tongue: dark('Connector tongue', 0x26262a, .45, .4, { polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -5 }),
+    tongue: dark('Connector tongue', 0x0d0d0f, .55, .3, { polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -5 }),
     pins: new THREE.MeshPhysicalMaterial({ name: 'MagSafe contacts', color: 0xb99d6a, metalness: 1, roughness: .28, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -6 }),
     vent: dark('Vent slot', 0x030304, .9, 0),
     foot: new THREE.MeshPhysicalMaterial({ name: 'Foot', color: 0x18181a, metalness: 0, roughness: .42, clearcoat: .3, clearcoatRoughness: .4 }),
@@ -267,6 +269,15 @@ function wall(outline, z0, z1) {
 const offsetPts = (pts, dx, dy) => pts.map(([x, y]) => [x + dx, y + dy]);
 // Rounded rectangle in plan space from world X/Z bounds.
 function planRect(x0, x1, z0, z1, r) { return offsetPts(perimeter(x1 - x0, z1 - z0, r), (x0 + x1) / 2, -(z0 + z1) / 2); }
+// Vertical shading for a port seen square-on, v = 0 at the bottom lip.
+function recessMap() {
+  const H = 128, c = document.createElement('canvas'); c.width = 4; c.height = H;
+  const x = c.getContext('2d'), g = x.createLinearGradient(0, H, 0, 0);
+  g.addColorStop(0, '#a4a5aa'); g.addColorStop(.1, '#6c6d72'); g.addColorStop(.26, '#2a2b2f'); g.addColorStop(.42, '#08080a');
+  g.addColorStop(.76, '#030304'); g.addColorStop(.92, '#0c0c0e'); g.addColorStop(1, '#1a1a1d');
+  x.fillStyle = g; x.fillRect(0, 0, 4, H);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
 function mesh(g, m, name) { const o = new THREE.Mesh(g, m); o.name = name; return o; }
 
 // Flat rounded rectangle (2D frame of the parent) facing +z.
@@ -491,7 +502,13 @@ function buildPorts(M, anchors) {
   };
   // Layers stack outward in small steps (chamfer, face, opening, tongue, pins).
   const lift = new Map([['Recessed port face', .0002], ['Port interior', .0004], ['Connector tongue', .0006], ['MagSafe contacts', .0008]]);
-  const flat = (shape, m, name) => { const o = mesh(new THREE.ShapeGeometry(shape, 24), m, name); o.position.z = lift.get(m.name) || 0; return o; };
+  const flat = (shape, m, name) => {
+    const geo = new THREE.ShapeGeometry(shape, 24);
+    // Map UVs to the opening's own bounds so the recess shading fits each port.
+    geo.computeBoundingBox(); const b = geo.boundingBox, p = geo.attributes.position, uv = geo.attributes.uv;
+    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) - b.min.x) / (b.max.x - b.min.x || 1), (p.getY(i) - b.min.y) / (b.max.y - b.min.y || 1));
+    const o = mesh(geo, m, name); o.position.z = lift.get(m.name) || 0; return o;
+  };
   // Machined chamfer round each opening: a flat ring whose normals lean 45°
   // toward the hole, so its lower lip catches the top light as on the real cut.
   const chamfer = (outer, inner, name) => {
@@ -689,7 +706,9 @@ export function createMacbook() {
     for (const m of [M.shell, M.lid, M.grille]) m.color.copy(body);
     M.arm.color.copy(body).multiplyScalar(light ? .9 : .92);
     // Diamond-cut chamfers read a little brighter than the blasted surface.
-    M.chamfer.color.copy(body).lerp(tmp.set(light ? '#ffffff' : '#8d8a90'), light ? .25 : .22);
+    M.chamfer.color.copy(body).lerp(tmp.set(light ? '#ffffff' : '#8d8a90'), light ? .15 : .06);
+    // The lit lower wall inside each port is the bare aluminium of the finish.
+    M.portDark.color.copy(body).lerp(tmp.set('#ffffff'), light ? .05 : .35).multiplyScalar(light ? .78 : .7);
     M.portFace.color.copy(body).multiplyScalar(light ? .55 : .8);
     // Mirror logo: bright polish on light finishes, a deep mirror on dark ones.
     M.logo.color.copy(light ? tmp.set('#e9e9ea') : tmp.set('#3a393c'));
