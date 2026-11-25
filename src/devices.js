@@ -29,7 +29,7 @@ export const devices = {
       ['Copper', '#c97642', swatch('#a2582f', '#c97642', '#efb081')],
     ],
     shots: deviceShots.pro, parts: deviceParts.pro, points: devicePoints.pro,
-    artwork: { width: 640, height: 1360, aspect: 7.05 / 14.85, label: 'iPhone 18 Pro', presentation: (W, H) => wallpaperCanvas('pro', W, H) },
+    artwork: { width: 640, height: 1360, aspect: 7.05 / 14.85, label: 'iPhone 18 Pro', native: [1206, 2622], presentation: (W, H) => wallpaperCanvas('pro', W, H) },
     overlay: { style: 'phone' },
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
@@ -43,7 +43,7 @@ export const devices = {
     finishTitle: 'Finish', finishCaption: 'Satin glass · polished frame', defaultFinish: 'Graphite',
     finishes: duoFinishes.map(([name, back, frame]) => [name, back, swatch(frame, back, back)]),
     shots: deviceShots.duo, parts: deviceParts.duo, points: 'live',
-    artwork: { width: 1456, height: 1024, aspect: INNER_ASPECT, label: 'iPhone Duo', layout: 900, presentation: (W, H) => wallpaperCanvas('duo', W, H) },
+    artwork: { width: 1456, height: 1024, aspect: INNER_ASPECT, label: 'iPhone Duo', native: [2670, 1878], layout: 900, presentation: (W, H) => wallpaperCanvas('duo', W, H) },
     overlay: { style: 'tablet' },
     assembly: {
       title: 'Fold', from: 'Closed', to: 'Open', toAction: 'Open', fromAction: 'Close',
@@ -60,7 +60,7 @@ export const devices = {
     finishes: ipadFinishes.map(([name, hex, , low, high]) => [name, hex, swatch(low, hex, high)]),
     shots: deviceShots.ipad, parts: deviceParts.ipad, points: 'live',
     // Landscape panel, 2360 × 1640 px, drawn at 0.8×. Presentation = the MacBook Pro loops wallpaper.
-    artwork: { width: 1888, height: 1312, aspect: IPAD_ASPECT, label: 'iPad', layout: 1180, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('ipad', W, H, finishName(ipadFinishes, hex)) },
+    artwork: { width: 1888, height: 1312, aspect: IPAD_ASPECT, label: 'iPad', native: [2360, 1640], layout: 1180, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('ipad', W, H, finishName(ipadFinishes, hex)) },
     overlay: { style: 'tablet' },
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
@@ -74,7 +74,7 @@ export const devices = {
     finishes: ipadMiniFinishes.map(([name, hex, , low, high]) => [name, hex, swatch(low, hex, high)]),
     shots: deviceShots.ipadmini, parts: deviceParts.ipadmini, points: 'live',
     // Landscape panel, 2266 × 1488 px, drawn at 0.8×. Presentation = the MacBook Pro loops wallpaper.
-    artwork: { width: 1813, height: 1190, aspect: IPAD_MINI_ASPECT, label: 'iPad mini', layout: 1133, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('ipadmini', W, H, finishName(ipadMiniFinishes, hex)) },
+    artwork: { width: 1813, height: 1190, aspect: IPAD_MINI_ASPECT, label: 'iPad mini', native: [2266, 1488], layout: 1133, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('ipadmini', W, H, finishName(ipadMiniFinishes, hex)) },
     overlay: { style: 'tablet' },
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
@@ -88,7 +88,7 @@ export const devices = {
     finishes: watchFinishes.map(([name, hex, band]) => [name, hex, swatch(band, hex, '#ffffff')]),
     shots: deviceShots.watch, parts: deviceParts.watch, points: 'live',
     // 46 mm display, 416 × 496 pt, drawn at 2×.
-    artwork: { width: 832, height: 992, aspect: WATCH_ASPECT, label: 'Apple Watch', presentation: (W, H) => watchFaceCanvas(W, H), presentationLabel: ['Presentation', 'Analog face'] },
+    artwork: { width: 832, height: 992, aspect: WATCH_ASPECT, label: 'Apple Watch', native: [416, 496], presentation: (W, H) => watchFaceCanvas(W, H), presentationLabel: ['Presentation', 'Analog face'] },
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
       toing: 'Exploding', froming: 'Assembling', clipTo: 'Disassemble', clipFrom: 'Reassemble', playTo: 'Play disassembly', playFrom: 'Play reassembly',
@@ -104,7 +104,7 @@ export const devices = {
     finishes: airFinishes.map(([name, back, frame, plateau]) => [name, back, swatch(frame, back, plateau)]),
     shots: deviceShots.air, parts: deviceParts.air, points: 'live',
     // 2736 × 1260 px panel, drawn at half size.
-    artwork: { width: 630, height: 1368, aspect: AIR_ASPECT, label: 'iPhone Air', presentation: (W, H) => wallpaperCanvas('air', W, H) },
+    artwork: { width: 630, height: 1368, aspect: AIR_ASPECT, label: 'iPhone Air', native: [1260, 2736], presentation: (W, H) => wallpaperCanvas('air', W, H) },
     overlay: { style: 'phone' },
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
@@ -119,7 +119,7 @@ export const devices = {
     finishes: i17Finishes.map(([name, back, frame, bump]) => [name, back, swatch(frame, back, bump)]),
     shots: deviceShots.i17, parts: deviceParts.i17, points: 'live',
     // 2622 × 1206 px panel, drawn at half size.
-    artwork: { width: 603, height: 1311, aspect: I17_ASPECT, label: 'iPhone 17', presentation: (W, H) => wallpaperCanvas('i17', W, H) },
+    artwork: { width: 603, height: 1311, aspect: I17_ASPECT, label: 'iPhone 17', native: [1206, 2622], presentation: (W, H) => wallpaperCanvas('i17', W, H) },
     overlay: { style: 'phone' },
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
@@ -134,7 +134,7 @@ export const devices = {
     finishes: pixelFinishes.map(([name, back, frame, ring]) => [name, back, swatch(frame, back, ring)]),
     shots: deviceShots.pixel, parts: deviceParts.pixel, points: 'live',
     // 1280 × 2856 px panel, drawn at half size.
-    artwork: { width: 640, height: 1428, aspect: PIXEL_ASPECT, label: 'Pixel 11 Pro', finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('pixel', W, H, finishName(pixelFinishes, hex)) },
+    artwork: { width: 640, height: 1428, aspect: PIXEL_ASPECT, label: 'Pixel 11 Pro', native: [1280, 2856], finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('pixel', W, H, finishName(pixelFinishes, hex)) },
     overlay: { style: 'phone' },
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',
@@ -149,7 +149,7 @@ export const devices = {
     finishes: mbpFinishes.map(([name, hex]) => [name, hex, swatch(hex, hex, name === 'Silver' ? '#ffffff' : '#5a595c')]),
     shots: deviceShots.mbp, parts: deviceParts.mbp, points: 'live',
     // 3024 × 1964 Liquid Retina XDR panel (with the notch strip), drawn at half size.
-    artwork: { width: 1512, height: 982, aspect: MBP_ASPECT, label: 'MacBook Pro', layout: 1512, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('mbp', W, H, finishName(mbpFinishes, hex)) },
+    artwork: { width: 1512, height: 982, aspect: MBP_ASPECT, label: 'MacBook Pro', native: [3024, 1964], layout: 1512, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('mbp', W, H, finishName(mbpFinishes, hex)) },
     assembly: {
       title: 'Lid', from: 'Closed', to: 'Open', toAction: 'Open', fromAction: 'Close',
       toing: 'Opening', froming: 'Closing', clipTo: 'Open lid', clipFrom: 'Close lid', playTo: 'Play opening', playFrom: 'Play closing',
@@ -165,7 +165,7 @@ export const devices = {
     shots: deviceShots.sdx, parts: deviceParts.sdx, points: 'live',
     // 5120 × 2880 panel, drawn at 5/16 size.
     // Presentation: the Spectrum folds wallpaper. The HTML editor (screens/editor/index.html) can be loaded with Replace.
-    artwork: { width: 1600, height: 900, aspect: SDX_ASPECT, label: 'Studio Display XDR', layout: 1920, presentation: (W, H) => wallpaperCanvas('sdx', W, H), presentationLabel: ['Presentation', 'Spectrum folds'] },
+    artwork: { width: 1600, height: 900, aspect: SDX_ASPECT, label: 'Studio Display XDR', native: [5120, 2880], layout: 1920, presentation: (W, H) => wallpaperCanvas('sdx', W, H), presentationLabel: ['Presentation', 'Spectrum folds'] },
     // Only the HTML editor and your own artwork; the wallpaper presets are hidden.
     presets: false,
     assembly: {
@@ -181,7 +181,7 @@ export const devices = {
     finishes: imacFinishes.map(([name, back, chin, stand]) => [name, back, swatch(stand, back, chin)]),
     shots: deviceShots.imac, parts: deviceParts.imac, points: 'live',
     // 4480 × 2520 panel, drawn at 1/4 size; laid out like a 2240 pt desktop.
-    artwork: { width: 1120, height: 630, aspect: IMAC_ASPECT, label: 'iMac', layout: 2240, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('imac', W, H, finishName(imacFinishes, hex)), presentationLabel: ['Presentation', 'Ribbons wallpaper'] },
+    artwork: { width: 1120, height: 630, aspect: IMAC_ASPECT, label: 'iMac', native: [4480, 2520], layout: 2240, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('imac', W, H, finishName(imacFinishes, hex)), presentationLabel: ['Presentation', 'Ribbons wallpaper'] },
     presets: false,
     assembly: {
       title: 'Assembly', from: 'Assembled', to: 'Exploded', toAction: 'Explode', fromAction: 'Assemble',

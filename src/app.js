@@ -309,8 +309,20 @@ async function boot(){
   }
   onScreenImage(()=>{if(syncCover.stale)syncCover();syncIpadPortrait();});
   $('art-preset').onchange=e=>{art.preset(e.target.value);syncCover();syncIpadPortrait();syncOverlay();if(!stage.composition)setShot('front');else stage.mark();};
-  async function importArt(file){if(!file)return;if(isSVGFile(file))return setLayer(file);try{if(await art.upload(file)){syncIpadPortrait();syncOverlay();if(!stage.composition)setShot('front');else stage.mark();}}catch(err){liveMessage(err.message);}}
+  async function importArt(file){if(!file)return;if(isSVGFile(file))return setLayer(file);try{if(await art.upload(file)){syncArtHint(art.uploadSize);syncIpadPortrait();syncOverlay();if(!stage.composition)setShot('front');else stage.mark();}}catch(err){liveMessage(err.message);}}
   $('upload').onchange=e=>{importArt(e.target.files[0]);e.target.value='';};
+  // Exact upload size for the current screen: the panel's native pixels, trimmed
+  // to the artwork aspect if they differ, so an image maps 1:1 with no crop.
+  function exactSize(a){
+    const [nw,nh]=a.native||[a.width,a.height];
+    if(Math.abs(nw/nh-a.aspect)/a.aspect<.004)return [nw,nh];
+    return a.aspect<1?[Math.round(nh*a.aspect),nh]:[nw,Math.round(nw/a.aspect)];
+  }
+  function syncArtHint(uploaded){
+    const a=devices[stage.device].artwork,[w,h]=exactSize(a),el=$('art-hint');
+    el.textContent='Exact fit: '+w+' × '+h+' px';el.title='Images at this size map pixel for pixel. Other sizes are centre-cropped to the screen shape.';
+    if(uploaded){const r=uploaded.w/uploaded.h;if(Math.abs(r-a.aspect)/a.aspect>.01)el.textContent+=' · your '+uploaded.w+' × '+uploaded.h+' image was cropped to fit';}
+  }
   $('stage').ondragover=e=>{e.preventDefault();};$('stage').ondrop=e=>{e.preventDefault();importArt(e.dataTransfer.files[0]);};
   const onBusy=value=>{busy=value;stage.control.enabled=!value;$('assembly-toggle').disabled=value;};
   // Screenshot: tool-rail camera button or the S key (outside text fields).
@@ -433,7 +445,7 @@ async function boot(){
       for(const o of sel.querySelectorAll('option'))o.hidden=noPresets&&!['presentation','custom'].includes(o.value);
       for(const g of sel.querySelectorAll('optgroup'))g.hidden=noPresets;
       if(noPresets&&!['presentation','custom'].includes(art.mode))art.preset('presentation');
-      art.setTarget(stage.exterior.screenMaterial,d.artwork);syncCover();syncIpadPortrait();syncOverlay();
+      art.setTarget(stage.exterior.screenMaterial,d.artwork);syncArtHint();syncCover();syncIpadPortrait();syncOverlay();
       fill(shots,stage.shots);fill(parts,stage.parts);
       rebuildFinishes(d);rebuildParts();rebuildViews();
       // A custom colour carries over; a named finish switches to the device's own.
@@ -458,7 +470,7 @@ async function boot(){
       items[n].focus();e.preventDefault();
     });
     for(const b of picker?.querySelectorAll('[data-device]')||[])b.onclick=()=>{openMenu(false);setDevice(b.dataset.device);};
-    if(deviceFromQuery()!=='pro')setDevice(deviceFromQuery(),true);else art.setTarget(stage.exterior.screenMaterial,devices.pro.artwork);
+    if(deviceFromQuery()!=='pro')setDevice(deviceFromQuery(),true);else{art.setTarget(stage.exterior.screenMaterial,devices.pro.artwork);syncArtHint();}
     if(typeof __STUDIO_QA__!=='undefined'&&__STUDIO_QA__)window.studioDevice=setDevice;
   }
   const params=new URLSearchParams(location.search);

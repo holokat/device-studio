@@ -209,3 +209,4 @@ dialog{border:0;border-radius:24px;background:#1f1f21;padding:24px}
 .dev-name{flex-wrap:wrap;row-gap:4px}
 .topbar{position:relative;z-index:40}
 .parts:not([open]){gap:0}.parts summary h2{margin:0}
+.art-hint{margin:8px 2px 0;font-variant-numeric:tabular-nums}
