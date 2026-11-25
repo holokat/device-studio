@@ -5,7 +5,7 @@ const moves=[...duoMoves,...proMoves];
 import {icons} from './icons.js';
 import {createStage,shots,parts,lightPalettes,randomPalette} from './stage.js';
 import {screenArtwork,makeWallpaper} from './artwork.js';
-import {farboundId,farboundScreen} from './farbound.js';
+import {farboundId,farboundScreen,farboundURL} from './farbound.js';
 import {onScreenImage} from './screen-images.js';
 import {wallpaperCanvas,preloadWallpapers,presentationWallpapers,wallpaperInk} from './wallpapers.js';
 import {createScreenOverlay} from './screen-overlay.js';
@@ -335,6 +335,8 @@ async function boot(){
     stage.mark();
   }
   onScreenImage(()=>{if(syncCover.stale)syncCover();syncIpadPortrait();});
+  // Farbound wallpapers ship with the hosted studio only; hide the group when the files are absent.
+  {const probe=new Image();probe.onerror=()=>$('art-preset').querySelector('optgroup[label="Farbound wallpapers"]')?.remove();probe.src=farboundURL('stars');}
   $('art-preset').onchange=e=>{art.preset(e.target.value);syncCover();syncIpadPortrait();syncOverlay();if(!stage.composition)setShot('front');else stage.mark();};
   async function importArt(file){if(!file)return;if(isSVGFile(file))return setLayer(file);try{if(await art.upload(file)){syncArtHint(art.uploadSize);syncIpadPortrait();syncOverlay();if(!stage.composition)setShot('front');else stage.mark();}}catch(err){liveMessage(err.message);}}
   $('upload').onchange=e=>{importArt(e.target.files[0]);e.target.value='';};

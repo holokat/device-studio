@@ -3,3 +3,6 @@ node_modules/
 # Old static view previews (views now render live thumbnails)
 previews/*.webp
 .wrangler
+
+# Farbound wallpapers: served by the live site, kept out of the repo
+screens/farbound/
