@@ -234,3 +234,5 @@ dialog{border:0;border-radius:24px;background:#1f1f21;padding:24px}
 [data-theme=light] .palette-row .palettes button[aria-pressed=true]{box-shadow:0 0 0 2px #fff,0 0 0 4px #1d1d1f}
 .palette-row .glow-row{display:grid;grid-template-columns:auto minmax(0,1fr) 42px;align-items:center;gap:12px;font-size:14px}
 .palette-row .glow-row output{text-align:right;font-variant-numeric:tabular-nums;color:var(--soft);font-size:12px}
+/* Export menus share one width; long move names no longer widen the Movement menu. */
+.dialog-select select{flex:none;width:58%;min-width:0;text-overflow:ellipsis}
