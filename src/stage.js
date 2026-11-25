@@ -102,13 +102,13 @@ function colorLightMap(renderer,[a,b,c]){
 // The chosen backdrop with a soft bloom of the palette behind the device and a
 // tinted floor pool. Dark backdrops add the light; pale ones take a pastel wash.
 const backdropBase={auto:'#000000',noir:'#000000',graphite:'#2c2c2e',studio:'#9a9a9a',stone:'#cfcac3',white:'#e8e8ec'};
-function glowTexture([a,b,c],base='#000000'){
+function glowTexture([a,b,c],base='#000000',k=1){
   const W=1600,H=1200,canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d'),bc=new THREE.Color(base),lum=bc.r*.2126+bc.g*.7152+bc.b*.0722,pale=lum>.3;
   ctx.fillStyle=base;ctx.fillRect(0,0,W,H);
   const rgba=(hex,al)=>{const k=new THREE.Color(hex);return `rgba(${k.r*255|0},${k.g*255|0},${k.b*255|0},${al})`;};
   ctx.globalCompositeOperation=pale?'source-over':'lighter';if(pale)ctx.globalAlpha=.75;
-  const blob=(x,y,r,hex,al,sy=1)=>{ctx.save();ctx.translate(x,y);ctx.scale(1,sy);const g=ctx.createRadialGradient(0,0,0,0,0,r);
+  const blob=(x,y,r,hex,al,sy=1)=>{al=Math.min(1,al*k);ctx.save();ctx.translate(x,y);ctx.scale(1,sy);const g=ctx.createRadialGradient(0,0,0,0,0,r);
     g.addColorStop(0,rgba(hex,al));g.addColorStop(.45,rgba(hex,al*.38));g.addColorStop(1,rgba(hex,0));ctx.fillStyle=g;ctx.fillRect(-r,-r,r*2,r*2);ctx.restore();};
   blob(W*.36,H*.44,W*.42,a,.5);blob(W*.66,H*.5,W*.42,b,.5);if(c)blob(W*.5,H*.18,W*.3,c,.22);
   blob(W*.42,H*.86,W*.5,a,.38,.16);blob(W*.6,H*.86,W*.5,b,.38,.16);
@@ -172,7 +172,7 @@ export function createStage(canvas,invalidate){
   const pro={model,groups,exterior};let device='pro',duo=null;const built={};
   const proLayouts=createCompositions(scene,model,groups),genLayouts={};let layouts=proLayouts;
   const camera=new THREE.PerspectiveCamera(26,1,.05,350),control=new OrbitControls(camera,canvas);
-    const baseEnv=scene.environment;let colorEnv=null,glow=null,palette=lightPalettes.sunset;
+    const baseEnv=scene.environment;let colorEnv=null,glow=null,glowK=1,palette=lightPalettes.sunset;
   control.enableDamping=false;control.enablePan=true;control.minDistance=.65;control.maxDistance=310;control.rotateSpeed=.64;control.zoomSpeed=.78;
   const backgrounds=Object.fromEntries(Object.keys(palettes).map(k=>[k,backdropTexture(k)]));scene.background=backgrounds.noir;
   let outputDepth=0;
@@ -315,14 +315,16 @@ export function createStage(canvas,invalidate){
   }
   // 'clear' renders with a transparent background (stills and screenshots keep the alpha).
   function colorBackdrop(value){const base=backdropBase[value]||(/^#[0-9a-f]{6}$/i.test(value)?value:'#000000');
-    if(glow?.base!==base){glow?.tex.dispose();glow={base,tex:glowTexture(palette.colors,base)};}return glow.tex;}
+    if(glow?.base!==base||glow.k!==glowK){glow?.tex.dispose();glow={base,k:glowK,tex:glowTexture(palette.colors,base,glowK)};}return glow.tex;}
+  // Colour glow strength, 0–1.5: the backdrop bloom and the gelled rim lights together.
+  function setGlow(k){glowK=k;if(rig==='color')setLighting('color');}
   function setBackdrop(value){backdrop=value;if(/^#[0-9a-f]{6}$/i.test(value)&&!backgrounds[value]){for(const k of Object.keys(backgrounds))if(k.startsWith('#')){backgrounds[k].dispose();delete backgrounds[k];}backgrounds[value]=backdropTexture(value);}scene.background=value==='clear'?null:rig==='color'?colorBackdrop(value):backgrounds[value==='auto'?'noir':value]||backgrounds.noir;renderer.setClearColor(0x000000,0);mark();}
   function setLighting(value){
     rig=value;const rim=value==='rim',day=value==='daylight',color=value==='color';scene.environmentRotation.y=rim?1.8:day?-.58:color?.4:0;
     scene.environmentIntensity=rim?.68:day?1.13:color?.75:.95;key.intensity=rim?1.1:day?2.4:color?.55:2.05;fill.intensity=rim?2.6:color?.25:.9;
     key.position.set(rim?-6:-4,day?14:9,rim?-7:8);renderer.toneMappingExposure=rim?.93:color?.98:1.05;
     hemi.intensity=color?.22:.58;rimLight.intensity=color?.4:1.35;
-    tints.forEach((l,i)=>l.intensity=color?[6,6,.6][i]:0);
+    tints.forEach((l,i)=>l.intensity=color?[6,6,.6][i]*glowK:0);
     scene.environment=color?(colorEnv||=colorLightMap(renderer,palette.colors)).texture:baseEnv;
     setBackdrop(backdrop);mark();
   }
@@ -369,5 +371,5 @@ export function createStage(canvas,invalidate){
   function orbit(angle){const offset=savedPos.copy(camera.position).sub(control.target).applyAxisAngle(dummy.set(0,1,0),angle);camera.position.copy(control.target).add(offset);control.update();mark();}
   function zoom(factor){const offset=savedTarget.copy(camera.position).sub(control.target);offset.setLength(THREE.MathUtils.clamp(offset.length()*factor,control.minDistance,control.maxDistance));camera.position.copy(control.target).add(offset);control.update();mark();}
   resize();configureShot('hero');
-  return {customView(){currentShot='';},renderer,canvas,scene,camera,get model(){return model;},get groups(){return groups;},get exterior(){return exterior;},get device(){return device;},get duo(){return duo;},get ipad(){return built.ipad;},get tablet(){return device==='ipad'||device==='ipadmini'?built[device]:null;},get built(){return built;},get shots(){return deviceShots[device];},get parts(){return deviceParts[device];},setDevice,points,thumbnail,screenFacing,control,render,mark,resize,setProgress,configureShot,revealAssembly,spreadView,setBackdrop,setLighting,setLightColors,get palette(){return palette;},beginOutput,snapshot,restore,orbit,zoom,get progress(){return progress;},get shot(){return currentShot;},get composition(){return layouts.current;},get backdrop(){return backdrop;},get rig(){return rig;},focusOptic,get lensFocus(){return lensFocus;}};
+  return {customView(){currentShot='';},renderer,canvas,scene,camera,get model(){return model;},get groups(){return groups;},get exterior(){return exterior;},get device(){return device;},get duo(){return duo;},get ipad(){return built.ipad;},get tablet(){return device==='ipad'||device==='ipadmini'?built[device]:null;},get built(){return built;},get shots(){return deviceShots[device];},get parts(){return deviceParts[device];},setDevice,points,thumbnail,screenFacing,control,render,mark,resize,setProgress,configureShot,revealAssembly,spreadView,setBackdrop,setLighting,setLightColors,setGlow,get palette(){return palette;},beginOutput,snapshot,restore,orbit,zoom,get progress(){return progress;},get shot(){return currentShot;},get composition(){return layouts.current;},get backdrop(){return backdrop;},get rig(){return rig;},focusOptic,get lensFocus(){return lensFocus;}};
 }

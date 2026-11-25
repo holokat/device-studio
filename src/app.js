@@ -262,6 +262,8 @@ async function boot(){
   for(const [id,pal] of Object.entries(lightPalettes)){const b=document.createElement('button');b.dataset.palette=id;b.title=b.ariaLabel=pal.name;b.style.setProperty('--g',grad(pal.colors));b.onclick=()=>pickPalette(id,pal);$('palette-chips').append(b);}
   {const b=document.createElement('button');b.dataset.palette='shuffle';b.className='shuffle';b.title=b.ariaLabel='Shuffle colours';icon(b,'Sparkle');b.onclick=()=>pickPalette('shuffle',randomPalette());$('palette-chips').append(b);}
   look.palette='sunset';
+  {const g=$('glow-amount');let queued=0;const paint=()=>{g.style.setProperty('--progress',g.value/1.5+'%');$('glow-out').textContent=g.value+'%';};paint();
+    g.oninput=()=>{paint();if(queued)return;queued=requestAnimationFrame(()=>{queued=0;if(look.rig!=='color'){look.rig='color';stage.setLighting('color');syncLook();}stage.setGlow(g.value/100);});};}
   // Rim is the default look for every device.
   stage.setLighting(look.rig);syncLook();
   const params0=new URLSearchParams(location.search);
