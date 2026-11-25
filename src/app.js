@@ -60,6 +60,8 @@ async function boot(){
     for(const [id] of list){try{facing[id]=stage.screenFacing(id)>.2;}catch(e){facing[id]=true;}}
     return list.map((e,i)=>[e,i]).sort((a,b)=>(facing[b[0][0]]-facing[a[0][0]])||a[1]-b[1]).map(([e])=>e);
   }
+  // Each device opens on the first view in that order, so it starts on the display.
+  const openingShot=()=>orderedShots()[0]?.[0]||'hero';
   for(const [id,s] of orderedShots()){
     const button=document.createElement('button');
     button.className='shot';button.title=s.label;button.dataset.shot=id;
@@ -469,7 +471,7 @@ async function boot(){
       {const b=picker?.querySelector(`[data-device="${id}"]`);if(b){$('device-trigger-name').textContent=d.name;$('device-trigger-img').src=b.querySelector('img').getAttribute('src');}}
       document.title=d.name+' · Model studio';
       const url=new URL(location.href);if(id!=='pro')url.searchParams.set('device',id);else url.searchParams.delete('device');if(!initial)url.searchParams.delete('shot');history.replaceState(null,'',url);
-      lastSelected='hero';setShot('hero');relabel();filterMoves();
+      {const open=openingShot();lastSelected=open;setShot(open);}relabel();filterMoves();
       thumbsStale();
     }
     // Device menu: a trigger with the current device, opening a grid of previews.
@@ -491,7 +493,7 @@ async function boot(){
   const params=new URLSearchParams(location.search);
   const initialFinish=finishes.find(f=>f[0].toLowerCase()===params.get('finish')?.toLowerCase())||finishes.find(f=>f[0]===devices[stage.device].defaultFinish)||finishes[1];
   art.preset('presentation');finish(initialFinish[1]);syncOverlay();
-  if(Object.hasOwn(shots,params.get('shot')))setShot(params.get('shot'));
+  setShot(Object.hasOwn(shots,params.get('shot'))?params.get('shot'):openingShot());
   refresh();$('loading').hidden=true;
   stage.render(true);requestAnimationFrame(frame);
   if(typeof __STUDIO_QA__!=='undefined'&&__STUDIO_QA__)window.studioQA={stage,art,motion,setShot,finish,moves,moveById,exportGLB:()=>exportGLB(stage,motion),refresh,pause,onBusy};

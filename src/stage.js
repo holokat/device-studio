@@ -48,7 +48,7 @@ GENERIC.pixel.shots={hero:pxHero,front:pxFront,...compositions,...pxRest};
 export const deviceShots={pro:{...shots},duo:duoShots,ipad:ipadShots,ipadmini:ipadMiniShots,watch:watchShots,air:GENERIC.air.shots,i17:GENERIC.i17.shots,pixel:GENERIC.pixel.shots,mbp:mbpShots,sdx:sdxShots,imac:imacShots};
 export const deviceParts={pro:{...parts},duo:duoParts,ipad:ipadParts,ipadmini:ipadMiniParts,watch:watchParts,air:airParts,i17:i17Parts,pixel:pixelParts,mbp:mbpParts,sdx:sdxParts,imac:imacParts};
 const PRO_FAMILY=new Set(['pro']);
-const palettes={noir:['#26272b','#0e0e10','#060607'],studio:['#aaa','#aaa','#aaa'],stone:['#eae7e1','#c7c2bb','#b5afa7'],graphite:['#494847','#272727','#1e1e1e'],white:['#ececf0','#e5e5ea','#d9d9df']};
+const palettes={noir:['#060708','#020203','#000000'],studio:['#aaa','#aaa','#aaa'],stone:['#eae7e1','#c7c2bb','#b5afa7'],graphite:['#494847','#272727','#1e1e1e'],white:['#ececf0','#e5e5ea','#d9d9df']};
 
 function studioLightMap(renderer){
   const room=new THREE.Scene();room.background=new THREE.Color(.19,.19,.19);
@@ -64,22 +64,24 @@ function studioLightMap(renderer){
   generator.dispose();room.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});return map;
 }
 function noirTexture(){
-  // Dark studio sweep: lifted centre, a soft floor pool under the handset,
-  // a cool top spill and fine grain so the deep gradient never bands.
+  // Black stage in the style of a product-launch keynote: true black falling to
+  // the corners, with a faint cool slate pool on the floor under the device, as
+  // if the screen were lighting the table. Fine grain keeps the dark ramp from banding.
   const W=1600,H=1200,canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');
-  const base=ctx.createRadialGradient(W*.5,H*.42,0,W*.5,H*.46,W*.78);
-  base.addColorStop(0,'#232428');base.addColorStop(.45,'#141416');base.addColorStop(1,'#050506');
+  const base=ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,W*.7);
+  base.addColorStop(0,'#060708');base.addColorStop(.6,'#020203');base.addColorStop(1,'#000000');
   ctx.fillStyle=base;ctx.fillRect(0,0,W,H);
-  ctx.save();ctx.translate(W*.5,H*.86);ctx.scale(1,.2);
-  const pool=ctx.createRadialGradient(0,0,0,0,0,W*.42);
-  pool.addColorStop(0,'rgba(255,240,228,.10)');pool.addColorStop(.5,'rgba(255,240,228,.035)');pool.addColorStop(1,'rgba(255,240,228,0)');
-  ctx.fillStyle=pool;ctx.fillRect(-W,-H*3,W*2,H*6);ctx.restore();
-  const spill=ctx.createRadialGradient(W*.5,-H*.2,0,W*.5,-H*.2,H*.9);
-  spill.addColorStop(0,'rgba(190,205,235,.07)');spill.addColorStop(1,'rgba(190,205,235,0)');
-  ctx.fillStyle=spill;ctx.fillRect(0,0,W,H);
+  // Floor: a wide, flat pool of cool light below centre that fades up into black.
+  ctx.save();ctx.translate(W*.5,H*.84);ctx.scale(1,.16);
+  const pool=ctx.createRadialGradient(0,0,0,0,0,W*.46);
+  pool.addColorStop(0,'rgba(70,94,120,.5)');pool.addColorStop(.45,'rgba(46,63,84,.24)');pool.addColorStop(1,'rgba(30,40,56,0)');
+  ctx.fillStyle=pool;ctx.fillRect(-W,-H*4,W*2,H*8);ctx.restore();
+  const floor=ctx.createLinearGradient(0,H*.7,0,H);
+  floor.addColorStop(0,'rgba(26,34,44,0)');floor.addColorStop(.55,'rgba(26,34,44,.32)');floor.addColorStop(1,'rgba(10,13,18,.2)');
+  ctx.fillStyle=floor;ctx.fillRect(0,H*.7,W,H*.3);
   const img=ctx.getImageData(0,0,W,H),d=img.data;
-  for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*5;d[i]+=n;d[i+1]+=n;d[i+2]+=n;}
+  for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*3;d[i]+=n;d[i+1]+=n;d[i+2]+=n;}
   ctx.putImageData(img,0,0);
   const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;return tex;
 }
@@ -190,7 +192,14 @@ export function createStage(canvas,invalidate){
   // How squarely a view looks at the display: the best dot product between a
   // screen mesh's outward normal and the direction to the camera (−1 … 1).
   // Sets the view up off-screen and restores the working state, like thumbnail().
-  const screenNormals=new WeakMap();
+  const screenNormals=new WeakMap(),sight=new THREE.Raycaster();
+  // A mesh that can hide what is behind it: shown (with all its parents) and
+  // not glass. Cover glass and clear coats over a display don't count.
+  function opaque(o){
+    for(let p=o;p;p=p.parent)if(!p.visible)return false;
+    const ms=Array.isArray(o.material)?o.material:[o.material];
+    return ms.some(m=>m&&m.visible!==false&&!(m.transparent&&m.opacity<.9)&&!(m.transmission>0)&&!m.isLineBasicMaterial);
+  }
   function averageNormal(geometry){
     let n=screenNormals.get(geometry);if(n)return n;
     const a=geometry.attributes.normal;n=new THREE.Vector3();
@@ -208,7 +217,13 @@ export function createStage(canvas,invalidate){
         n.copy(averageNormal(o.geometry)).applyMatrix3(m3.getNormalMatrix(o.matrixWorld)).normalize();
         if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();
         box.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).getCenter(c);
-        best=Math.max(best,n.dot(c.subVectors(camera.position,c).normalize()));
+        const toCam=new THREE.Vector3().subVectors(camera.position,c),dist=toCam.length(),dot=n.dot(toCam.normalize());
+        if(dot<=best)return;
+        // Only a screen the camera can actually see counts (a folded Duo's inner
+        // display faces the lens but is hidden inside the fold).
+        sight.set(camera.position,toCam.negate());sight.far=dist+1;
+        const hit=sight.intersectObject(model,true).find(h=>opaque(h.object));
+        if(!hit||hit.object===o||hit.distance>dist-.3)best=dot;
       });
       return best;
     }finally{restore(saved);}
