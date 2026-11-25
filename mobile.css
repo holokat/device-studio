@@ -1,11 +1,15 @@
 /* Phone layout: full-bleed viewport, playback strip, bottom tab bar.
-   Each tab opens a bottom sheet; the viewport shrinks so the device stays in view. */
+   Each tab opens a bottom sheet; the viewport shrinks so the device stays in view.
+   The body is pinned to the screen (position:fixed, inset 0) rather than sized
+   with 100dvh: an installed iOS web app with a translucent status bar reports a
+   viewport height that leaves out the status bar, which lifted the tab bar
+   off the bottom edge. The playback strip and tab bar are fixed to the bottom. */
 .tabbar{display:none}
 
 @media (max-width:720px){
-  :root{--tabbar-h:56px;--transport-h:58px;--sheet-h:min(46dvh,440px);--safe-b:env(safe-area-inset-bottom,0px)}
-  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
-  body{display:flex;flex-direction:column;height:100dvh;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  :root{--tabbar-h:56px;--transport-h:58px;--sheet-h:min(46dvh,440px);--safe-b:env(safe-area-inset-bottom,0px);--chrome-b:calc(var(--tabbar-h) + var(--transport-h) + var(--safe-b))}
+  html{height:100%;overflow:hidden;overscroll-behavior:none}
+  body{position:fixed;inset:0;width:auto;height:auto;margin:0;overflow:hidden;overscroll-behavior:none;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 
   /* Top bar: brand mark, device picker, theme, export. */
   .topbar{flex:none;height:calc(54px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));gap:8px}
@@ -19,9 +23,10 @@
 
   /* Viewport. */
   .shell{flex:1;min-height:0;height:auto;display:block;position:relative}
-  .stage-column{position:absolute;left:0;right:0;top:0;height:100%;padding:0 max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px));transition:height .3s cubic-bezier(.2,.8,.2,1)}
-  body.sheet-open .stage-column{height:calc(100% - var(--open-h,var(--sheet-h)))}
-  #stage{border-radius:20px}
+  /* The canvas runs edge to edge between the top bar and the playback strip. */
+  .stage-column{position:absolute;left:0;right:0;top:0;bottom:var(--chrome-b);height:auto;padding:0 env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px);transition:bottom .3s cubic-bezier(.2,.8,.2,1)}
+  body.sheet-open .stage-column{bottom:calc(var(--chrome-b) + var(--open-h,var(--sheet-h)))}
+  #stage{border-radius:0}
   .hud-left{top:10px;left:10px}
   .tool-rail{top:10px;right:10px;transform:none;gap:6px}
   .tool-rail button{width:38px;height:38px}
@@ -30,11 +35,11 @@
   #full{display:none}
 
   /* Playback strip, always above the tab bar. */
-  .transport{flex:none;position:static;height:var(--transport-h);padding:8px max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));gap:12px;z-index:31;background:var(--panel)}
+  .transport{position:fixed;left:0;right:0;bottom:calc(var(--tabbar-h) + var(--safe-b));height:var(--transport-h);padding:8px max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));gap:12px;z-index:31;background:var(--panel)}
   .tl-ticks{display:none}
 
   /* Bottom tab bar. */
-  .tabbar{flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:calc(var(--tabbar-h) + var(--safe-b));padding:0 env(safe-area-inset-right,0px) var(--safe-b) env(safe-area-inset-left,0px);background:var(--panel);border-top:1px solid var(--line-2);position:relative;z-index:32}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:calc(var(--tabbar-h) + var(--safe-b));padding:0 env(safe-area-inset-right,0px) var(--safe-b) env(safe-area-inset-left,0px);background:var(--panel);border-top:1px solid var(--line-2);z-index:32}
   .tabbar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;font-size:10.5px;font-weight:500;letter-spacing:.01em;color:var(--muted)}
   .tabbar button:active{transform:none}
   .tabbar button>span[data-icon] svg{width:22px;height:22px}
