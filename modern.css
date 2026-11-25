@@ -223,3 +223,12 @@ dialog{border:0;border-radius:24px;background:#1f1f21;padding:24px}
 .library-head .tabs2{gap:6px}
 .library-head .tabs2>button[aria-selected=false]{background:var(--card);color:var(--soft)}
 [data-theme=light] .library-head .tabs2>button[aria-selected=false]{background:#fff;color:#424245}
+/* Light rig: four chips; colour-light palettes below, a gradient swatch each plus shuffle. */
+#rig-chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.palette-row{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:12px}
+.palette-row .palettes{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;width:100%}
+.palette-row .palettes button{width:100%;aspect-ratio:1.5;max-height:34px;border:0;border-radius:10px;padding:0;background:var(--g);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.palette-row .palettes button[aria-pressed=true]{box-shadow:0 0 0 2px var(--card),0 0 0 4px #f2f2f4}
+.palette-row .palettes .shuffle{display:grid;place-items:center;background:var(--g,var(--card-2));color:#fff}
+.palette-row .palettes .shuffle svg{width:15px;height:15px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+[data-theme=light] .palette-row .palettes button[aria-pressed=true]{box-shadow:0 0 0 2px #fff,0 0 0 4px #1d1d1f}

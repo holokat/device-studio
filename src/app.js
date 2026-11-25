@@ -3,7 +3,7 @@ import {createDirector,moves as proMoves,moveById} from './cinematic.js';
 import {duoMoves} from './duo/moves.js';
 const moves=[...duoMoves,...proMoves];
 import {icons} from './icons.js';
-import {createStage,shots,parts} from './stage.js';
+import {createStage,shots,parts,lightPalettes,randomPalette} from './stage.js';
 import {screenArtwork,makeWallpaper} from './artwork.js';
 import {farboundId,farboundScreen} from './farbound.js';
 import {onScreenImage} from './screen-images.js';
@@ -246,14 +246,22 @@ async function boot(){
   $('zoom-in').onclick=()=>stage.zoom(.82);$('zoom-out').onclick=()=>stage.zoom(1.22);
   $('fit').onclick=()=>{stopMove();director.reset();if(!activeShot){if(stage.progress>0)stage.spreadView();else setShot(stage.composition?'scene'+stage.composition:lastSelected);return;}const state=stage.snapshot();if(activeShot==='optics'&&state.focus!=='array')stage.focusOptic(state.focus);else stage.configureShot(activeShot);stage.setProgress(state.p);for(const [k,v] of Object.entries(state.vis))stage.groups[k].visible=v;refresh();};
   $('full').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('stage').requestFullscreen();}catch{liveMessage('Fullscreen is unavailable in this browser.');}};
-  const LOOK={rig:{softbox:'Softbox',rim:'Rim',daylight:'Daylight'},backdrop:{auto:'Noir',graphite:'Graphite',studio:'Gray sweep',stone:'Stone',white:'Porcelain',clear:'Transparent'}};
+  const LOOK={rig:{softbox:'Softbox',rim:'Rim',daylight:'Daylight',color:'Color'},backdrop:{auto:'Noir',graphite:'Graphite',studio:'Gray sweep',stone:'Stone',white:'Porcelain',clear:'Transparent'}};
   let look={rig:'rim',backdrop:'auto'};
   const isHex=v=>/^#[0-9a-f]{6}$/i.test(v);
-  function syncLook(){$('hud-look').textContent=(isHex(look.backdrop)?'Custom '+look.backdrop.toUpperCase():LOOK.backdrop[look.backdrop])+' · '+LOOK.rig[look.rig];
+  function syncLook(){$('hud-look').textContent=(isHex(look.backdrop)?'Custom '+look.backdrop.toUpperCase():LOOK.backdrop[look.backdrop])+' · '+(look.rig==='color'?stage.palette.name+' light':LOOK.rig[look.rig]);
+    for(const b of $('palette-chips').children)b.setAttribute('aria-pressed',String(look.rig==='color'&&b.dataset.palette===look.palette));
     for(const b of $('rig-chips').children)b.setAttribute('aria-pressed',String(b.dataset.rig===look.rig));
     for(const b of $('backdrop-chips').querySelectorAll('[data-backdrop]'))b.setAttribute('aria-pressed',String(b.dataset.backdrop===look.backdrop));
     const cb=$('backdrop-custom');cb.classList.toggle('on',isHex(look.backdrop));if(isHex(look.backdrop)){cb.style.setProperty('--c',look.backdrop);$('backdrop-color').value=look.backdrop;}}
   for(const b of $('rig-chips').children)b.onclick=()=>{look.rig=b.dataset.rig;stage.setLighting(look.rig);syncLook();};
+  // Colour light: named palettes plus a shuffle that picks a fresh pair of hues. Picking one turns the colour rig on.
+  const grad=c=>`linear-gradient(135deg,${c[0]} 0 38%,${c[1]} 62% 100%)`;
+  function pickPalette(id,pal){look.palette=id;stage.setLightColors(pal);if(look.rig!=='color'){look.rig='color';stage.setLighting('color');}
+    const sh=$('palette-chips').querySelector('[data-palette=shuffle]');if(id==='shuffle')sh.style.setProperty('--g',grad(pal.colors));syncLook();}
+  for(const [id,pal] of Object.entries(lightPalettes)){const b=document.createElement('button');b.dataset.palette=id;b.title=b.ariaLabel=pal.name;b.style.setProperty('--g',grad(pal.colors));b.onclick=()=>pickPalette(id,pal);$('palette-chips').append(b);}
+  {const b=document.createElement('button');b.dataset.palette='shuffle';b.className='shuffle';b.title=b.ariaLabel='Shuffle colours';icon(b,'Sparkle');b.onclick=()=>pickPalette('shuffle',randomPalette());$('palette-chips').append(b);}
+  look.palette='sunset';
   // Rim is the default look for every device.
   stage.setLighting(look.rig);syncLook();
   const params0=new URLSearchParams(location.search);

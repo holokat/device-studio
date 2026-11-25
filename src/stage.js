@@ -85,6 +85,54 @@ function noirTexture(){
   ctx.putImageData(img,0,0);
   const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;return tex;
 }
+// Colour rig, after Apple's product films: the same studio room with its two
+// tall strip lights gelled in the palette colours (they paint the metal edges)
+// and a dim third card overhead.
+function colorLightMap(renderer,[a,b,c]){
+  const room=new THREE.Scene();room.background=new THREE.Color(.012,.012,.016);
+  function card(x,y,z,w,h,power,tint){
+    const panel=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:new THREE.Color(tint).multiplyScalar(power),side:THREE.DoubleSide}));
+    panel.position.set(x,y,z);panel.lookAt(0,0,0);room.add(panel);
+  }
+  card(-12,1,-2,3.5,28,7,a);card(12,1,-5,3.5,26,7,b);card(-4,-2,-13,9,14,2.6,b);card(6,-1,-12,7,12,2,a);
+  card(1,13,4,14,6,.9,c||'#ffffff');card(0,2,14,16,10,.18,'#ffffff');
+  const generator=new THREE.PMREMGenerator(renderer),map=generator.fromScene(room,.03,.1,100,{size:256});
+  generator.dispose();room.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});return map;
+}
+// Black stage with a soft bloom of the palette behind the device and a tinted floor pool.
+function glowTexture([a,b,c]){
+  const W=1600,H=1200,canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  const rgba=(hex,al)=>{const k=new THREE.Color(hex);return `rgba(${k.r*255|0},${k.g*255|0},${k.b*255|0},${al})`;};
+  ctx.globalCompositeOperation='lighter';
+  const blob=(x,y,r,hex,al,sy=1)=>{ctx.save();ctx.translate(x,y);ctx.scale(1,sy);const g=ctx.createRadialGradient(0,0,0,0,0,r);
+    g.addColorStop(0,rgba(hex,al));g.addColorStop(.45,rgba(hex,al*.38));g.addColorStop(1,rgba(hex,0));ctx.fillStyle=g;ctx.fillRect(-r,-r,r*2,r*2);ctx.restore();};
+  blob(W*.36,H*.44,W*.42,a,.5);blob(W*.66,H*.5,W*.42,b,.5);if(c)blob(W*.5,H*.18,W*.3,c,.22);
+  blob(W*.42,H*.86,W*.5,a,.38,.16);blob(W*.6,H*.86,W*.5,b,.38,.16);
+  ctx.globalCompositeOperation='source-over';
+  const v=ctx.createRadialGradient(W*.5,H*.48,W*.2,W*.5,H*.5,W*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.85)');
+  ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
+  const img=ctx.getImageData(0,0,W,H),d=img.data;
+  for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*4;d[i]+=n;d[i+1]+=n;d[i+2]+=n;}
+  ctx.putImageData(img,0,0);
+  const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;return tex;
+}
+// Named palettes for the colour rig: [left rim, right rim, overhead].
+export const lightPalettes={
+  sunset:{name:'Sunset',colors:['#ff6a1a','#ff2d78','#ffd0a8']},
+  ocean:{name:'Ocean',colors:['#0a6cff','#22e1d6','#cfe8ff']},
+  aurora:{name:'Aurora',colors:['#2fe07a','#6a5cff','#d8fff0']},
+  grape:{name:'Grape',colors:['#b44dff','#ff3d6e','#ffd6f0']},
+  citrus:{name:'Citrus',colors:['#ffd60a','#ff7a00','#fff6d6']},
+  spectrum:{name:'Spectrum',colors:['#ff375f','#0a84ff','#30d158']},
+  cosmic:{name:'Cosmic',colors:['#4b3cff','#ff2fd0','#9ad8ff']},
+};
+// A random pleasing pair: two saturated hues 70–150° apart, plus a pale third.
+export function randomPalette(){
+  const h=Math.random(),gap=(70+Math.random()*80)/360,c=new THREE.Color();
+  const hex=(hh,ss,ll)=>'#'+c.setHSL(((hh%1)+1)%1,ss,ll).getHexString();
+  return {name:'Shuffle',colors:[hex(h,.95,.55),hex(h+gap,.95,.55),hex(h+gap/2,.6,.88)]};
+}
 // A custom backdrop: the chosen colour at the centre, falling off like the built-in sweeps.
 function customPalette(hex){const c=new THREE.Color(hex),hi=c.clone().lerp(new THREE.Color(0xffffff),.1),lo=c.clone().multiplyScalar(.78),edge=c.clone().multiplyScalar(.62);return ['#'+hi.getHexString(),'#'+lo.getHexString(),'#'+edge.getHexString()];}
 function backdropTexture(name){
@@ -105,7 +153,12 @@ export function createStage(canvas,invalidate){
   key.position.set(-4,9,8);fill.position.set(7,3,-6);
   // Cool rim from behind traces the titanium edges against dark backdrops.
   const rimLight=new THREE.DirectionalLight('#dfe8ff',1.35);rimLight.position.set(5,6,-9);scene.add(rimLight);
-  scene.add(key,fill,new THREE.HemisphereLight('#fff9f3','#b3acaa',.58));
+  const hemi=new THREE.HemisphereLight('#fff9f3','#b3acaa',.58);scene.add(key,fill,hemi);
+  // Colour rig: gelled rims that travel with the camera so they always sit
+  // behind the device, aimed at the orbit target.
+  const tintTarget=new THREE.Object3D();scene.add(tintTarget);
+  const tintAt=[[-10,.6,9],[10,-.4,9],[0,9,6]],tints=tintAt.map(()=>{const l=new THREE.DirectionalLight(0xffffff,0);l.target=tintTarget;scene.add(l);return l;});
+  const bx=new THREE.Vector3(),by=new THREE.Vector3(),bz=new THREE.Vector3();
   let exterior=createExterior(),model=new THREE.Group();const internal=createInternals();model.name='iPhone 18 Pro reference mockup';
   model.add(exterior.root,internal.root);scene.add(model);
   // Slimmer handset: the 18 Pro body is drawn at 8.75 mm; scale its depth to ~7.7 mm.
@@ -116,6 +169,7 @@ export function createStage(canvas,invalidate){
   const pro={model,groups,exterior};let device='pro',duo=null;const built={};
   const proLayouts=createCompositions(scene,model,groups),genLayouts={};let layouts=proLayouts;
   const camera=new THREE.PerspectiveCamera(26,1,.05,350),control=new OrbitControls(camera,canvas);
+    const baseEnv=scene.environment;let colorEnv=null,glow=null,palette=lightPalettes.sunset;
   control.enableDamping=false;control.enablePan=true;control.minDistance=.65;control.maxDistance=310;control.rotateSpeed=.64;control.zoomSpeed=.78;
   const backgrounds=Object.fromEntries(Object.keys(palettes).map(k=>[k,backdropTexture(k)]));scene.background=backgrounds.noir;
   let outputDepth=0;
@@ -257,12 +311,23 @@ export function createStage(canvas,invalidate){
     if(!w||!h)return;renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();mark();
   }
   // 'clear' renders with a transparent background (stills and screenshots keep the alpha).
-  function setBackdrop(value){backdrop=value;if(/^#[0-9a-f]{6}$/i.test(value)&&!backgrounds[value]){for(const k of Object.keys(backgrounds))if(k.startsWith('#')){backgrounds[k].dispose();delete backgrounds[k];}backgrounds[value]=backdropTexture(value);}scene.background=value==='clear'?null:backgrounds[value==='auto'?'noir':value]||backgrounds.noir;renderer.setClearColor(0x000000,0);mark();}
+  function setBackdrop(value){backdrop=value;if(/^#[0-9a-f]{6}$/i.test(value)&&!backgrounds[value]){for(const k of Object.keys(backgrounds))if(k.startsWith('#')){backgrounds[k].dispose();delete backgrounds[k];}backgrounds[value]=backdropTexture(value);}scene.background=value==='clear'?null:value==='auto'&&rig==='color'?(glow||=glowTexture(palette.colors)):backgrounds[value==='auto'?'noir':value]||backgrounds.noir;renderer.setClearColor(0x000000,0);mark();}
   function setLighting(value){
-    rig=value;const rim=value==='rim',day=value==='daylight';scene.environmentRotation.y=rim?1.8:day?-.58:0;
-    scene.environmentIntensity=rim?.68:day?1.13:.95;key.intensity=rim?1.1:day?2.4:2.05;fill.intensity=rim?2.6:.9;
-    key.position.set(rim?-6:-4,day?14:9,rim?-7:8);renderer.toneMappingExposure=rim?.93:1.05;mark();
+    rig=value;const rim=value==='rim',day=value==='daylight',color=value==='color';scene.environmentRotation.y=rim?1.8:day?-.58:color?.4:0;
+    scene.environmentIntensity=rim?.68:day?1.13:color?.75:.95;key.intensity=rim?1.1:day?2.4:color?.55:2.05;fill.intensity=rim?2.6:color?.25:.9;
+    key.position.set(rim?-6:-4,day?14:9,rim?-7:8);renderer.toneMappingExposure=rim?.93:color?.98:1.05;
+    hemi.intensity=color?.22:.58;rimLight.intensity=color?.4:1.35;
+    tints.forEach((l,i)=>l.intensity=color?[6,6,.6][i]:0);
+    scene.environment=color?(colorEnv||=colorLightMap(renderer,palette.colors)).texture:baseEnv;
+    setBackdrop(backdrop);mark();
   }
+  // Colour rig palette: {name, colors:[a, b, c]}.
+  function setLightColors(next){
+    palette=next;tints.forEach((l,i)=>l.color.set(next.colors[i]));
+    colorEnv?.dispose();colorEnv=null;glow?.dispose();glow=null;
+    if(rig==='color')setLighting('color');else mark();
+  }
+  setLightColors(palette);
   function render(force=false){
     if(!dirty&&!force)return;
     // All interior parts remain in the assembly and its export. Skip their draw
@@ -280,6 +345,8 @@ export function createStage(canvas,invalidate){
     renderer.setViewport(0,0,w,h);renderer.setScissorTest(false);
     if(framed&&w/h<4/3){lensFov=camera.fov;camera.fov=2*THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(lensFov/2))*(4/3)/(w/h)));}
     camera.aspect=w/h;camera.updateProjectionMatrix();
+    tintTarget.position.copy(control.target);tintTarget.updateMatrixWorld();
+    if(rig==='color'){camera.matrixWorld.extractBasis(bx,by,bz);tints.forEach((l,i)=>{const [x,y,z]=tintAt[i];l.position.copy(control.target).addScaledVector(bx,x).addScaledVector(by,y).addScaledVector(bz,-z);});}
     layouts.sync();renderer.render(scene,camera);internal.root.visible=true;
     if(lensFov!==null){camera.fov=lensFov;camera.updateProjectionMatrix();}
     dirty=false;
@@ -297,5 +364,5 @@ export function createStage(canvas,invalidate){
   function orbit(angle){const offset=savedPos.copy(camera.position).sub(control.target).applyAxisAngle(dummy.set(0,1,0),angle);camera.position.copy(control.target).add(offset);control.update();mark();}
   function zoom(factor){const offset=savedTarget.copy(camera.position).sub(control.target);offset.setLength(THREE.MathUtils.clamp(offset.length()*factor,control.minDistance,control.maxDistance));camera.position.copy(control.target).add(offset);control.update();mark();}
   resize();configureShot('hero');
-  return {customView(){currentShot='';},renderer,canvas,scene,camera,get model(){return model;},get groups(){return groups;},get exterior(){return exterior;},get device(){return device;},get duo(){return duo;},get ipad(){return built.ipad;},get tablet(){return device==='ipad'||device==='ipadmini'?built[device]:null;},get built(){return built;},get shots(){return deviceShots[device];},get parts(){return deviceParts[device];},setDevice,points,thumbnail,screenFacing,control,render,mark,resize,setProgress,configureShot,revealAssembly,spreadView,setBackdrop,setLighting,beginOutput,snapshot,restore,orbit,zoom,get progress(){return progress;},get shot(){return currentShot;},get composition(){return layouts.current;},get backdrop(){return backdrop;},get rig(){return rig;},focusOptic,get lensFocus(){return lensFocus;}};
+  return {customView(){currentShot='';},renderer,canvas,scene,camera,get model(){return model;},get groups(){return groups;},get exterior(){return exterior;},get device(){return device;},get duo(){return duo;},get ipad(){return built.ipad;},get tablet(){return device==='ipad'||device==='ipadmini'?built[device]:null;},get built(){return built;},get shots(){return deviceShots[device];},get parts(){return deviceParts[device];},setDevice,points,thumbnail,screenFacing,control,render,mark,resize,setProgress,configureShot,revealAssembly,spreadView,setBackdrop,setLighting,setLightColors,get palette(){return palette;},beginOutput,snapshot,restore,orbit,zoom,get progress(){return progress;},get shot(){return currentShot;},get composition(){return layouts.current;},get backdrop(){return backdrop;},get rig(){return rig;},focusOptic,get lensFocus(){return lensFocus;}};
 }
