@@ -6,14 +6,34 @@ A browser studio for product shots and launch-style films of devices. Every mode
 
 Drop your own design onto the screen, pick a finish, light it and frame it, then export a PNG, a WebM clip or a GLB.
 
+![The studio: Apple Watch with a Sport Loop, band and finish pickers on the right](docs/images/studio-ui.jpg)
+
+## Gallery
+
+All renders below come straight out of the studio.
+
+![iPhone 18 Pro in Copper](docs/images/pro-hero.webp)
+
+| | |
+|---|---|
+| ![iPhone Duo in tent stand](docs/images/duo-tent.webp) | ![iPhone 18 Pro display](docs/images/pro-front.webp) |
+| ![Apple Watch with Link Bracelet](docs/images/watch-link-gold.webp) | ![iPad colour line-up](docs/images/ipad-fan.webp) |
+| ![MacBook Pro](docs/images/macbook-hero.webp) | ![iMac on the desk with keyboard and mouse](docs/images/imac-desk.webp) |
+| ![Studio Display XDR](docs/images/display-hero.webp) | ![Pixel 11 Pro in Fog](docs/images/pixel-hero.webp) |
+
+Apple Watch bands: Sport Band, Sport Loop, Braided Solo Loop and Link Bracelet.
+
+![Apple Watch with four band styles](docs/images/watch-bands.webp)
+
 ## Devices
 
-iPhone 18 Pro · iPhone Duo (foldable) · iPhone 17 · iPhone Air · Pixel 11 Pro · iPad · MacBook Pro · Studio Display XDR · iMac 24-inch
+iPhone 18 Pro · iPhone Duo (foldable) · iPhone 17 · iPhone Air · Pixel 11 Pro · iPad · iPad mini · Apple Watch · MacBook Pro · Studio Display XDR · iMac 24-inch
 
 ## Features
 
-- **Your screen:** use an image, a video or an HTML page, which is rendered live and fitted to the display. Add an **SVG layer** on top: solid shapes stay sharp as real geometry.
+- **Your screen:** use an image, a video or an HTML page, which is rendered live and fitted to the display. The Screen panel gives the exact pixel size for each device (for example 416 × 496 px for Apple Watch), so an image maps pixel for pixel; other sizes are centre-cropped, never stretched. Add an **SVG layer** on top: solid shapes stay sharp as real geometry.
 - **Finishes:** each device's own colours, or any custom colour.
+- **Apple Watch bands:** Sport Band, Sport Loop (plaid and solid), Ocean Band, Braided Solo Loop, Milanese Loop and Link Bracelet, with woven, braided and brushed-metal surfaces generated in code.
 - **Light and backdrop:** softbox, rim or daylight, on a dark, light or transparent backdrop.
 - **Moves:** 40+ cinematic camera moves, including spins, macros, screen pans and combos, with a scrubbable timeline and an editable timing curve.
 - **Views:** compositions and hardware close-ups, with live thumbnails.
