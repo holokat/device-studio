@@ -1,0 +1,19 @@
+{
+  "name": "Device Studio",
+  "short_name": "Studio",
+  "description": "Put your design on iPhone, iPad, Apple Watch or Mac. Light it, frame it, export stills, clips and 3D.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#161617",
+  "theme_color": "#161617",
+  "categories": ["design", "photo", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

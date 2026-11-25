@@ -15,6 +15,8 @@ import {devicePoints} from './cinematic.js';
 import {bindExport,exportGLB,saveScreenshot} from './export.js';
 import {devices,deviceFromQuery} from './devices.js';
 import { bandOptions, bandSwatch, bandLabel } from './watch/bands.js';
+import { bindMobile, registerServiceWorker } from './mobile.js';
+registerServiceWorker();
 
 const $=id=>document.getElementById(id), finishes=[
   ['Burgundy','#67323d','#542530','#ae7784'],['Graphite','#373739','#242528','#8b8b8c'],
@@ -33,7 +35,7 @@ async function boot(){
   function showInspector(open){inspector.hidden=!open;toggle.setAttribute('aria-expanded',open);requestAnimationFrame(()=>{stage.resize();stage.mark();});}
   toggle.onclick=()=>showInspector(inspector.hidden);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('export-dialog').open&&!inspector.hidden&&window.innerWidth<980){showInspector(false);toggle.focus();}});
-  showInspector(window.innerWidth>=980);
+  showInspector(window.innerWidth>=980||window.innerWidth<=720);
   let lastSelected='hero',activeShot='hero',busy=false,playing=false,playTarget=1,turning=false,last=performance.now(),phase=0,preferReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const motion=bindMotionControls($('motion-controls'),()=>{
     if(playing)phase=motion.timeAt(playTarget?stage.progress:1-stage.progress);
@@ -44,6 +46,7 @@ async function boot(){
     for(const key of ['moves','views']){const on=key===id;$('lib-'+key).hidden=!on;$('lib-tab-'+key).setAttribute('aria-selected',String(on));}
   }
   $('lib-tab-moves').onclick=()=>libraryTab('moves');$('lib-tab-views').onclick=()=>libraryTab('views');
+  bindMobile({inspector,library:document.querySelector('.library'),libraryTab,onLayout:()=>requestAnimationFrame(()=>{stage.resize();stage.mark();})});
   function showViewGroup(){}
   function setShot(id){
     if(busy)return;

@@ -1,0 +1,74 @@
+/* Phone layout: full-bleed viewport, playback strip, bottom tab bar.
+   Each tab opens a bottom sheet; the viewport shrinks so the device stays in view. */
+.tabbar{display:none}
+
+@media (max-width:720px){
+  :root{--tabbar-h:56px;--transport-h:58px;--sheet-h:min(46dvh,440px);--safe-b:env(safe-area-inset-bottom,0px)}
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  body{display:flex;flex-direction:column;height:100dvh;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+
+  /* Top bar: brand mark, device picker, theme, export. */
+  .topbar{flex:none;height:calc(54px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));gap:8px}
+  .topbar .brand{font-size:0;gap:0}
+  #toggle-inspector{display:none}
+  #export-open{width:40px;height:40px;padding:0;gap:0;font-size:0;border-radius:50%}
+  #export-open svg{width:18px;height:18px}
+  .device-trigger{min-width:0;max-width:62vw}
+  #device-trigger-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .device-pop{position:fixed;top:calc(58px + env(safe-area-inset-top,0px));left:10px;right:10px;width:auto;max-height:calc(100dvh - 140px - env(safe-area-inset-top,0px))}
+
+  /* Viewport. */
+  .shell{flex:1;min-height:0;height:auto;display:block;position:relative}
+  .stage-column{position:absolute;left:0;right:0;top:0;height:100%;padding:0 max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px));transition:height .3s cubic-bezier(.2,.8,.2,1)}
+  body.sheet-open .stage-column{height:calc(100% - var(--open-h,var(--sheet-h)))}
+  #stage{border-radius:20px}
+  .hud-left{top:10px;left:10px}
+  .tool-rail{top:10px;right:10px;transform:none;gap:6px}
+  .tool-rail button{width:38px;height:38px}
+  .tool-rail button svg{width:17px;height:17px}
+  body.sheet-open .tool-rail{opacity:0;pointer-events:none}
+  #full{display:none}
+
+  /* Playback strip, always above the tab bar. */
+  .transport{flex:none;position:static;height:var(--transport-h);padding:8px max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));gap:12px;z-index:31;background:var(--panel)}
+  .tl-ticks{display:none}
+
+  /* Bottom tab bar. */
+  .tabbar{flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:calc(var(--tabbar-h) + var(--safe-b));padding:0 env(safe-area-inset-right,0px) var(--safe-b) env(safe-area-inset-left,0px);background:var(--panel);border-top:1px solid var(--line-2);position:relative;z-index:32}
+  .tabbar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;font-size:10.5px;font-weight:500;letter-spacing:.01em;color:var(--muted)}
+  .tabbar button:active{transform:none}
+  .tabbar button>span[data-icon] svg{width:22px;height:22px}
+  .tabbar button[aria-pressed=true]{color:var(--text)}
+  .tabbar button[aria-pressed=true]>span[data-icon]{color:var(--blue,#0a84ff)}
+
+  /* Sheets: the library (Moves, Views) and the inspector (Finish, Screen, Scene). */
+  .library,.inspector{position:fixed;left:0;right:0;top:auto;width:auto;height:var(--sheet-h);bottom:calc(var(--tabbar-h) + var(--transport-h) + var(--safe-b));z-index:30;margin:0;
+    padding:22px max(14px,env(safe-area-inset-right,0px)) 14px max(14px,env(safe-area-inset-left,0px));border:0;border-radius:22px 22px 0 0;background:var(--panel);
+    box-shadow:0 -12px 40px rgba(0,0,0,.35);transform:translateY(calc(100% + var(--tabbar-h) + var(--transport-h) + 40px));visibility:hidden;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s linear .3s}
+  .library::before,.inspector::before{content:"";position:absolute;top:8px;left:50%;width:36px;height:5px;margin-left:-18px;border-radius:3px;background:var(--line-2)}
+  .inspector{display:block;height:auto;max-height:var(--sheet-h);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .inspector>.panel{margin-bottom:12px}
+  .inspector>.panel:last-of-type{margin-bottom:0}
+  .library{display:flex;flex-direction:column;overflow:hidden}
+  .library-head{display:none}
+  .library .lib-list{overscroll-behavior:contain}
+  body[data-sheet=moves] .library,body[data-sheet=views] .library,
+  body[data-sheet=finish] .inspector,body[data-sheet=screen] .inspector,body[data-sheet=scene] .inspector{transform:none;visibility:visible;transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s}
+  .inspector>[data-sheet]{display:none}
+  body[data-sheet=finish] .inspector>[data-sheet=finish],
+  body[data-sheet=screen] .inspector>[data-sheet=screen],
+  body[data-sheet=scene] .inspector>[data-sheet=scene]{display:block}
+  .library.dragging,.inspector.dragging{transition:none}
+
+  /* Larger touch targets inside sheets. */
+  .chips button{height:32px;padding:0 12px;font-size:12px}
+  .move{padding:8px 7px}
+  dialog{width:auto;max-width:calc(100vw - 24px)}
+}
+@media (max-width:720px) and (prefers-reduced-motion:reduce){
+  .stage-column,.library,.inspector{transition:none!important}
+}
+@media (max-width:720px){
+  [data-theme=light] .library,[data-theme=light] .inspector{box-shadow:0 -12px 40px rgba(0,0,0,.12)}
+}
