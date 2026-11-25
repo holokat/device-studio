@@ -99,18 +99,21 @@ function colorLightMap(renderer,[a,b,c]){
   const generator=new THREE.PMREMGenerator(renderer),map=generator.fromScene(room,.03,.1,100,{size:256});
   generator.dispose();room.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});return map;
 }
-// Black stage with a soft bloom of the palette behind the device and a tinted floor pool.
-function glowTexture([a,b,c]){
+// The chosen backdrop with a soft bloom of the palette behind the device and a
+// tinted floor pool. Dark backdrops add the light; pale ones take a pastel wash.
+const backdropBase={auto:'#000000',noir:'#000000',graphite:'#2c2c2e',studio:'#9a9a9a',stone:'#cfcac3',white:'#e8e8ec'};
+function glowTexture([a,b,c],base='#000000'){
   const W=1600,H=1200,canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  const ctx=canvas.getContext('2d'),bc=new THREE.Color(base),lum=bc.r*.2126+bc.g*.7152+bc.b*.0722,pale=lum>.3;
+  ctx.fillStyle=base;ctx.fillRect(0,0,W,H);
   const rgba=(hex,al)=>{const k=new THREE.Color(hex);return `rgba(${k.r*255|0},${k.g*255|0},${k.b*255|0},${al})`;};
-  ctx.globalCompositeOperation='lighter';
+  ctx.globalCompositeOperation=pale?'source-over':'lighter';if(pale)ctx.globalAlpha=.75;
   const blob=(x,y,r,hex,al,sy=1)=>{ctx.save();ctx.translate(x,y);ctx.scale(1,sy);const g=ctx.createRadialGradient(0,0,0,0,0,r);
     g.addColorStop(0,rgba(hex,al));g.addColorStop(.45,rgba(hex,al*.38));g.addColorStop(1,rgba(hex,0));ctx.fillStyle=g;ctx.fillRect(-r,-r,r*2,r*2);ctx.restore();};
   blob(W*.36,H*.44,W*.42,a,.5);blob(W*.66,H*.5,W*.42,b,.5);if(c)blob(W*.5,H*.18,W*.3,c,.22);
   blob(W*.42,H*.86,W*.5,a,.38,.16);blob(W*.6,H*.86,W*.5,b,.38,.16);
-  ctx.globalCompositeOperation='source-over';
-  const v=ctx.createRadialGradient(W*.5,H*.48,W*.2,W*.5,H*.5,W*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.85)');
+  ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+  const v=ctx.createRadialGradient(W*.5,H*.48,W*.2,W*.5,H*.5,W*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,`rgba(0,0,0,${pale?.22:.85})`);
   ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
   const img=ctx.getImageData(0,0,W,H),d=img.data;
   for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*4;d[i]+=n;d[i+1]+=n;d[i+2]+=n;}
@@ -311,7 +314,9 @@ export function createStage(canvas,invalidate){
     if(!w||!h)return;renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();mark();
   }
   // 'clear' renders with a transparent background (stills and screenshots keep the alpha).
-  function setBackdrop(value){backdrop=value;if(/^#[0-9a-f]{6}$/i.test(value)&&!backgrounds[value]){for(const k of Object.keys(backgrounds))if(k.startsWith('#')){backgrounds[k].dispose();delete backgrounds[k];}backgrounds[value]=backdropTexture(value);}scene.background=value==='clear'?null:value==='auto'&&rig==='color'?(glow||=glowTexture(palette.colors)):backgrounds[value==='auto'?'noir':value]||backgrounds.noir;renderer.setClearColor(0x000000,0);mark();}
+  function colorBackdrop(value){const base=backdropBase[value]||(/^#[0-9a-f]{6}$/i.test(value)?value:'#000000');
+    if(glow?.base!==base){glow?.tex.dispose();glow={base,tex:glowTexture(palette.colors,base)};}return glow.tex;}
+  function setBackdrop(value){backdrop=value;if(/^#[0-9a-f]{6}$/i.test(value)&&!backgrounds[value]){for(const k of Object.keys(backgrounds))if(k.startsWith('#')){backgrounds[k].dispose();delete backgrounds[k];}backgrounds[value]=backdropTexture(value);}scene.background=value==='clear'?null:rig==='color'?colorBackdrop(value):backgrounds[value==='auto'?'noir':value]||backgrounds.noir;renderer.setClearColor(0x000000,0);mark();}
   function setLighting(value){
     rig=value;const rim=value==='rim',day=value==='daylight',color=value==='color';scene.environmentRotation.y=rim?1.8:day?-.58:color?.4:0;
     scene.environmentIntensity=rim?.68:day?1.13:color?.75:.95;key.intensity=rim?1.1:day?2.4:color?.55:2.05;fill.intensity=rim?2.6:color?.25:.9;
@@ -324,7 +329,7 @@ export function createStage(canvas,invalidate){
   // Colour rig palette: {name, colors:[a, b, c]}.
   function setLightColors(next){
     palette=next;tints.forEach((l,i)=>l.color.set(next.colors[i]));
-    colorEnv?.dispose();colorEnv=null;glow?.dispose();glow=null;
+    colorEnv?.dispose();colorEnv=null;glow?.tex.dispose();glow=null;
     if(rig==='color')setLighting('color');else mark();
   }
   setLightColors(palette);
