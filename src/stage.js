@@ -83,10 +83,12 @@ function noirTexture(){
   ctx.putImageData(img,0,0);
   const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;return tex;
 }
+// A custom backdrop: the chosen colour at the centre, falling off like the built-in sweeps.
+function customPalette(hex){const c=new THREE.Color(hex),hi=c.clone().lerp(new THREE.Color(0xffffff),.1),lo=c.clone().multiplyScalar(.78),edge=c.clone().multiplyScalar(.62);return ['#'+hi.getHexString(),'#'+lo.getHexString(),'#'+edge.getHexString()];}
 function backdropTexture(name){
   if(name==='noir')return noirTexture();
   const canvas=document.createElement('canvas');canvas.width=768;canvas.height=640;
-  const ctx=canvas.getContext('2d'),colors=palettes[name],g=ctx.createRadialGradient(410,239,0,394,270,630);
+  const ctx=canvas.getContext('2d'),colors=palettes[name]||customPalette(name),g=ctx.createRadialGradient(410,239,0,394,270,630);
   g.addColorStop(0,colors[0]);g.addColorStop(.79,colors[1]);g.addColorStop(1,colors[2]);ctx.fillStyle=g;ctx.fillRect(0,0,768,640);
   if(name==='studio'){
     const wash=ctx.createLinearGradient(0,0,0,640);wash.addColorStop(0,'#787878');wash.addColorStop(1,'#e4e4e4');ctx.fillStyle=wash;ctx.fillRect(0,0,768,640);
@@ -214,7 +216,7 @@ export function createStage(canvas,invalidate){
     if(!w||!h)return;renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();mark();
   }
   // 'clear' renders with a transparent background (stills and screenshots keep the alpha).
-  function setBackdrop(value){backdrop=value;scene.background=value==='clear'?null:backgrounds[value==='auto'?'noir':value];renderer.setClearColor(0x000000,0);mark();}
+  function setBackdrop(value){backdrop=value;if(/^#[0-9a-f]{6}$/i.test(value)&&!backgrounds[value]){for(const k of Object.keys(backgrounds))if(k.startsWith('#')){backgrounds[k].dispose();delete backgrounds[k];}backgrounds[value]=backdropTexture(value);}scene.background=value==='clear'?null:backgrounds[value==='auto'?'noir':value]||backgrounds.noir;renderer.setClearColor(0x000000,0);mark();}
   function setLighting(value){
     rig=value;const rim=value==='rim',day=value==='daylight';scene.environmentRotation.y=rim?1.8:day?-.58:0;
     scene.environmentIntensity=rim?.68:day?1.13:.95;key.intensity=rim?1.1:day?2.4:2.05;fill.intensity=rim?2.6:.9;

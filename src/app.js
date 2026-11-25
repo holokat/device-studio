@@ -239,9 +239,11 @@ async function boot(){
   $('full').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('stage').requestFullscreen();}catch{liveMessage('Fullscreen is unavailable in this browser.');}};
   const LOOK={rig:{softbox:'Softbox',rim:'Rim',daylight:'Daylight'},backdrop:{auto:'Noir',graphite:'Graphite',studio:'Gray sweep',stone:'Stone',white:'Porcelain',clear:'Transparent'}};
   let look={rig:'rim',backdrop:'auto'};
-  function syncLook(){$('hud-look').textContent=LOOK.backdrop[look.backdrop]+' · '+LOOK.rig[look.rig];
+  const isHex=v=>/^#[0-9a-f]{6}$/i.test(v);
+  function syncLook(){$('hud-look').textContent=(isHex(look.backdrop)?'Custom '+look.backdrop.toUpperCase():LOOK.backdrop[look.backdrop])+' · '+LOOK.rig[look.rig];
     for(const b of $('rig-chips').children)b.setAttribute('aria-pressed',String(b.dataset.rig===look.rig));
-    for(const b of $('backdrop-chips').children)b.setAttribute('aria-pressed',String(b.dataset.backdrop===look.backdrop));}
+    for(const b of $('backdrop-chips').querySelectorAll('[data-backdrop]'))b.setAttribute('aria-pressed',String(b.dataset.backdrop===look.backdrop));
+    const cb=$('backdrop-custom');cb.classList.toggle('on',isHex(look.backdrop));if(isHex(look.backdrop)){cb.style.setProperty('--c',look.backdrop);$('backdrop-color').value=look.backdrop;}}
   for(const b of $('rig-chips').children)b.onclick=()=>{look.rig=b.dataset.rig;stage.setLighting(look.rig);syncLook();};
   // Rim is the default look for every device.
   stage.setLighting(look.rig);syncLook();
@@ -257,7 +259,10 @@ async function boot(){
     if(swap){const want=light?'white':'auto',from=light?'auto':'white';if(look.backdrop===from)$('backdrop-chips').querySelector('[data-backdrop="'+want+'"]')?.click();}
   }
   $('theme-toggle').onclick=()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light',true);
-  for(const b of $('backdrop-chips').children)b.onclick=()=>{look.backdrop=b.dataset.backdrop;stage.setBackdrop(look.backdrop);$('stage').classList.toggle('light',['stone','white','studio'].includes(look.backdrop));$('stage').classList.toggle('clear',look.backdrop==='clear');syncLook();};
+  function pickBackdrop(value){look.backdrop=value;stage.setBackdrop(value);const lum=isHex(value)?[1,3,5].map(i=>parseInt(value.slice(i,i+2),16)/255).reduce((t,v,i)=>t+v*[.2126,.7152,.0722][i],0):0;
+    $('stage').classList.toggle('light',['stone','white','studio'].includes(value)||lum>.45);$('stage').classList.toggle('clear',value==='clear');syncLook();}
+  for(const b of $('backdrop-chips').querySelectorAll('[data-backdrop]'))b.onclick=()=>pickBackdrop(b.dataset.backdrop);
+  $('backdrop-color').oninput=e=>pickBackdrop(e.target.value.toLowerCase());
   if(document.documentElement.dataset.theme==='light')applyTheme('light',!params0.has('backdrop'));
   syncLook();
   // The Duo cover display follows a Farbound wallpaper; otherwise its own lock screen.
