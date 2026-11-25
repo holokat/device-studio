@@ -187,6 +187,32 @@ export function createStage(canvas,invalidate){
     try{render(true);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(canvas,0,0,w,h);return c.toDataURL('image/webp',.86);}
     finally{end();restore(saved);}
   }
+  // How squarely a view looks at the display: the best dot product between a
+  // screen mesh's outward normal and the direction to the camera (−1 … 1).
+  // Sets the view up off-screen and restores the working state, like thumbnail().
+  const screenNormals=new WeakMap();
+  function averageNormal(geometry){
+    let n=screenNormals.get(geometry);if(n)return n;
+    const a=geometry.attributes.normal;n=new THREE.Vector3();
+    if(a)for(let i=0;i<a.count;i++)n.x+=a.getX(i),n.y+=a.getY(i),n.z+=a.getZ(i);
+    n.normalize();screenNormals.set(geometry,n);return n;
+  }
+  function screenFacing(id){
+    const saved=snapshot();
+    try{
+      configureShot(id,4/3);model.updateWorldMatrix(true,true);
+      const mats=[exterior.screenMaterial,exterior.outerMaterial].filter(Boolean);
+      const n=new THREE.Vector3(),c=new THREE.Vector3(),m3=new THREE.Matrix3(),box=new THREE.Box3();let best=-1;
+      model.traverseVisible(o=>{
+        if(!o.isMesh||!(Array.isArray(o.material)?o.material.some(m=>mats.includes(m)):mats.includes(o.material)))return;
+        n.copy(averageNormal(o.geometry)).applyMatrix3(m3.getNormalMatrix(o.matrixWorld)).normalize();
+        if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();
+        box.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).getCenter(c);
+        best=Math.max(best,n.dot(c.subVectors(camera.position,c).normalize()));
+      });
+      return best;
+    }finally{restore(saved);}
+  }
   function setCamera(point,dir,height,aspect,minWidth){
     camera.zoom=1;const fit=Math.max(height,minWidth/aspect);
     camera.position.copy(point).addScaledVector(dummy.fromArray(dir).normalize(),fit/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))));
@@ -256,5 +282,5 @@ export function createStage(canvas,invalidate){
   function orbit(angle){const offset=savedPos.copy(camera.position).sub(control.target).applyAxisAngle(dummy.set(0,1,0),angle);camera.position.copy(control.target).add(offset);control.update();mark();}
   function zoom(factor){const offset=savedTarget.copy(camera.position).sub(control.target);offset.setLength(THREE.MathUtils.clamp(offset.length()*factor,control.minDistance,control.maxDistance));camera.position.copy(control.target).add(offset);control.update();mark();}
   resize();configureShot('hero');
-  return {customView(){currentShot='';},renderer,canvas,scene,camera,get model(){return model;},get groups(){return groups;},get exterior(){return exterior;},get device(){return device;},get duo(){return duo;},get ipad(){return built.ipad;},get tablet(){return device==='ipad'||device==='ipadmini'?built[device]:null;},get built(){return built;},get shots(){return deviceShots[device];},get parts(){return deviceParts[device];},setDevice,points,thumbnail,control,render,mark,resize,setProgress,configureShot,revealAssembly,spreadView,setBackdrop,setLighting,beginOutput,snapshot,restore,orbit,zoom,get progress(){return progress;},get shot(){return currentShot;},get composition(){return layouts.current;},get backdrop(){return backdrop;},get rig(){return rig;},focusOptic,get lensFocus(){return lensFocus;}};
+  return {customView(){currentShot='';},renderer,canvas,scene,camera,get model(){return model;},get groups(){return groups;},get exterior(){return exterior;},get device(){return device;},get duo(){return duo;},get ipad(){return built.ipad;},get tablet(){return device==='ipad'||device==='ipadmini'?built[device]:null;},get built(){return built;},get shots(){return deviceShots[device];},get parts(){return deviceParts[device];},setDevice,points,thumbnail,screenFacing,control,render,mark,resize,setProgress,configureShot,revealAssembly,spreadView,setBackdrop,setLighting,beginOutput,snapshot,restore,orbit,zoom,get progress(){return progress;},get shot(){return currentShot;},get composition(){return layouts.current;},get backdrop(){return backdrop;},get rig(){return rig;},focusOptic,get lensFocus(){return lensFocus;}};
 }

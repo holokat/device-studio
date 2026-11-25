@@ -53,7 +53,14 @@ async function boot(){
     pause();stopMove();director.reset();stage.configureShot(id);syncOverlay?.();activeShot=id;lastSelected=id;showViewGroup(shelfFor(id));refresh();
     if(!$('lib-views').hidden)shotButtons[id]?.scrollIntoView({block:"nearest"});
   }
-  for(const [id,s] of Object.entries(shots)){
+  // Views list order: within each shelf, views that look at the display come
+  // first (the device is a frame for the app), then the rest in authored order.
+  function orderedShots(){
+    const list=Object.entries(shots),facing={};
+    for(const [id] of list){try{facing[id]=stage.screenFacing(id)>.2;}catch(e){facing[id]=true;}}
+    return list.map((e,i)=>[e,i]).sort((a,b)=>(facing[b[0][0]]-facing[a[0][0]])||a[1]-b[1]).map(([e])=>e);
+  }
+  for(const [id,s] of orderedShots()){
     const button=document.createElement('button');
     button.className='shot';button.title=s.label;button.dataset.shot=id;
     const image=new Image();
@@ -399,7 +406,7 @@ async function boot(){
     function rebuildViews(){
       for(const b of Object.values(shotButtons))b.remove();
       for(const k of Object.keys(shotButtons))delete shotButtons[k];
-      for(const [id,s] of Object.entries(shots)){
+      for(const [id,s] of orderedShots()){
         const button=document.createElement('button');button.className='shot';button.title=s.label;button.dataset.shot=id;
         const label=document.createElement('span');label.textContent=s.title;
         button.append(viewImage(id),label);button.onclick=()=>setShot(id);

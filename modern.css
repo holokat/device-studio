@@ -219,3 +219,7 @@ dialog{border:0;border-radius:24px;background:#1f1f21;padding:24px}
 .backdrop-row .backdrops .backdrop-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .backdrop-row .backdrops .backdrop-custom:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 [data-theme=light] .backdrop-row .backdrops .backdrop-custom.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #1d1d1f}
+/* Library tabs: the unselected tab sits on the same faint pill as the category chips. */
+.library-head .tabs2{gap:6px}
+.library-head .tabs2>button[aria-selected=false]{background:var(--card);color:var(--soft)}
+[data-theme=light] .library-head .tabs2>button[aria-selected=false]{background:#fff;color:#424245}

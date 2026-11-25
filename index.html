@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050506"><meta name="description" content="Put your design on iPhone, iPad, Apple Watch or Mac. Light it, frame it, export stills, clips and 3D."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Studio"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><title>Model studio</title><script>try{if(localStorage.getItem("studio-theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script><link rel="stylesheet" href="studio.css?v=modern-1"><link rel="stylesheet" href="motion.css?v=1795520541"><link rel="stylesheet" href="modern.css?v=19"><link rel="stylesheet" href="mobile.css?v=2"><script defer src="studio.js?v=modern-38"></script></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050506"><meta name="description" content="Put your design on iPhone, iPad, Apple Watch or Mac. Light it, frame it, export stills, clips and 3D."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Studio"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><title>Model studio</title><script>try{if(localStorage.getItem("studio-theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script><link rel="stylesheet" href="studio.css?v=modern-1"><link rel="stylesheet" href="motion.css?v=1795520541"><link rel="stylesheet" href="modern.css?v=20"><link rel="stylesheet" href="mobile.css?v=2"><script defer src="studio.js?v=modern-39"></script></head>
 <body>
 <header class="topbar">
   <div class="brand"><span data-icon="ArCube3"></span>Studio</div>
@@ -13,18 +13,18 @@
 <aside class="library" aria-label="Library">
   <div class="library-head">
     <div class="seg-box tabs2" role="tablist" aria-label="Library sections">
-      <button role="tab" id="lib-tab-moves" aria-selected="true" aria-controls="lib-moves">Moves<span id="moves-count" class="count"></span></button>
-      <button role="tab" id="lib-tab-views" aria-selected="false" aria-controls="lib-views">Views<span id="views-count" class="count"></span></button>
+      <button role="tab" id="lib-tab-moves" aria-selected="false" aria-controls="lib-moves">Moves<span id="moves-count" class="count"></span></button>
+      <button role="tab" id="lib-tab-views" aria-selected="true" aria-controls="lib-views">Views<span id="views-count" class="count"></span></button>
     </div>
   </div>
-  <div id="lib-moves" class="lib-panel" role="tabpanel" aria-labelledby="lib-tab-moves">
+  <div id="lib-moves" class="lib-panel" role="tabpanel" aria-labelledby="lib-tab-moves" hidden>
     <div class="lib-tools">
       <label class="search"><span data-icon="MagnifyingGlass"></span><input id="move-search" type="search" placeholder="Search moves" aria-label="Search moves"></label>
       <div id="move-cats" class="chips" role="group" aria-label="Move categories"></div>
     </div>
     <div id="moves-grid" class="lib-list"></div>
   </div>
-  <div id="lib-views" class="lib-panel" role="tabpanel" aria-labelledby="lib-tab-views" hidden>
+  <div id="lib-views" class="lib-panel" role="tabpanel" aria-labelledby="lib-tab-views">
     <div class="lib-list">
       <h3 class="eyebrow">Compositions</h3><div id="views-compositions" class="view-grid"></div>
       <h3 class="eyebrow">Details</h3><div id="views-details" class="view-grid"></div>
