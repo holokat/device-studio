@@ -9,7 +9,7 @@ import { watchFaceCanvas } from './watchface.js';
 import { airFinishes, AIR_ASPECT } from './air/model.js';
 import { wallpaperCanvas } from './wallpapers.js';
 import { i17Finishes, I17_ASPECT } from './i17/model.js';
-import { mbpFinishes, MBP_ASPECT } from './macbook/model.js';
+import { mbpFinishes, MBP_ASPECT, mbaFinishes, MBA_ASPECT } from './macbook/model.js';
 import { sdxFinishes, SDX_ASPECT } from './studiodisplay/model.js';
 import { pixelFinishes, PIXEL_ASPECT } from './pixel/model.js';
 import { imacFinishes, IMAC_ASPECT } from './imac/model.js';
@@ -150,6 +150,21 @@ export const devices = {
     shots: deviceShots.mbp, parts: deviceParts.mbp, points: 'live',
     // 3024 × 1964 Liquid Retina XDR panel (with the notch strip), drawn at half size.
     artwork: { width: 1512, height: 982, aspect: MBP_ASPECT, label: 'MacBook Pro', native: [3024, 1964], layout: 1512, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('mbp', W, H, finishName(mbpFinishes, hex)) },
+    assembly: {
+      title: 'Lid', from: 'Closed', to: 'Open', toAction: 'Open', fromAction: 'Close',
+      toing: 'Opening', froming: 'Closing', clipTo: 'Open lid', clipFrom: 'Close lid', playTo: 'Play opening', playFrom: 'Play closing',
+      slider: 'Lid angle', partial: 'Lid view',
+    },
+    formatProgress: (p) => Math.round(110 * p) + '°',
+    fineprint: 'Exterior measured from Apple product imagery and photography.',
+  },
+  mba: {
+    id: 'mba', name: 'MacBook Air', file: 'MacBook-Air',
+    finishTitle: 'Finish', finishCaption: 'Anodized aluminium', defaultFinish: 'Sky Blue',
+    finishes: mbaFinishes.map(([name, hex]) => [name, hex, swatch(hex, hex, name === 'Midnight' ? '#5a5f6b' : '#ffffff')]),
+    shots: deviceShots.mba, parts: deviceParts.mba, points: 'live',
+    // 2560 × 1664 Liquid Retina panel (with the notch strip), drawn at half size.
+    artwork: { width: 1280, height: 832, aspect: MBA_ASPECT, label: 'MacBook Air', native: [2560, 1664], layout: 1280, finishArt: true, presentation: (W, H, hex) => wallpaperCanvas('mba', W, H, finishName(mbaFinishes, hex)) },
     assembly: {
       title: 'Lid', from: 'Closed', to: 'Open', toAction: 'Open', fromAction: 'Close',
       toing: 'Opening', froming: 'Closing', clipTo: 'Open lid', clipFrom: 'Close lid', playTo: 'Play opening', playFrom: 'Play closing',

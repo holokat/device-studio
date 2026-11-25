@@ -19,3 +19,19 @@ export const mbpShots = {
   'mbp-lip': { shelf: 'details', title: 'Front lip', label: 'Closed · thumb scoop', fold: 0, rot: F, at: 'scoop', dir: [0, .03, -1], height: 2.4, minWidth: 11, fov: 18 },
 };
 export const mbpParts = { base: 'Aluminium base', lid: 'Display lid', display: 'Display', keyboard: 'Keyboard and trackpad', ports: 'Ports', cameras: 'FaceTime camera' };
+
+// MacBook Air 13-inch: the same set-ups on the thinner body (a 1.13 cm side,
+// so the port views are framed a little tighter).
+export const mbaShots = {
+  hero: { shelf: 'compositions', title: 'Free orbit', label: 'Open · front three-quarter', fold: 1, rot: F, dir: [-.62, .42, -1], height: 33, minWidth: 50 },
+  front: { shelf: 'compositions', title: 'Display', label: 'Open · straight on', fold: .87, rot: F, dir: [0, .012, -1], height: 21.6, minWidth: 33, fov: 13 },
+  'mba-closed': { shelf: 'compositions', title: 'Closed', label: 'Closed · front three-quarter', fold: 0, rot: F, dir: [-.75, .55, -1], height: 17, minWidth: 33 },
+  'mba-lid': { shelf: 'compositions', title: 'Lid', label: 'Closed · lid and logo', fold: 0, rot: F, at: 'logo', dir: [0, 1, .3], height: 23.5, minWidth: 32 },
+  'mba-side': { shelf: 'compositions', title: 'Half open profile', label: 'Half open · left side', fold: .25, rot: F, dir: [1, .012, -.015], height: 13.5, minWidth: 25, fov: 8 },
+  'mba-ports-left': { shelf: 'details', title: 'Left ports', label: 'MagSafe 3 and two Thunderbolt ports', fold: 0, rot: F, at: 'portsLeft', dir: [1, .035, .03], height: 2.2, minWidth: 6.8, fov: 18 },
+  'mba-ports-right': { shelf: 'details', title: 'Headphone jack', label: '3.5 mm headphone jack', fold: 0, rot: F, at: 'portsRight', dir: [-1, .035, .03], height: 2.2, minWidth: 6.8, fov: 18 },
+  'mba-keyboard': { shelf: 'details', title: 'Keyboard', label: 'Keyboard, Touch ID and trackpad', fold: 1, rot: F, at: 'keyboardMacro', dir: [-.32, 1, -.62], height: 9.5, minWidth: 13 },
+  'mba-notch': { shelf: 'details', title: 'Camera notch', label: 'Notch and FaceTime camera', fold: 1, rot: F, at: 'notch', dir: [0, .364, -1], height: 2.4, minWidth: 5.6 },
+  'mba-lip': { shelf: 'details', title: 'Front lip', label: 'Closed · thumb notch', fold: 0, rot: F, at: 'scoop', dir: [0, .03, -1], height: 2, minWidth: 10, fov: 18 },
+};
+export const mbaParts = { base: 'Aluminium base', lid: 'Display lid', display: 'Display', keyboard: 'Keyboard and trackpad', ports: 'Ports', cameras: 'FaceTime camera' };

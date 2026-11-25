@@ -17,15 +17,15 @@ import { createI17 } from './i17/model.js';
 import { i17Shots, i17Parts } from './i17/views.js';
 import { createPixel } from './pixel/model.js';
 import { pixelShots, pixelParts } from './pixel/views.js';
-import { createMacbook } from './macbook/model.js';
-import { mbpShots, mbpParts } from './macbook/views.js';
+import { createMacbook, createMacbookAir } from './macbook/model.js';
+import { mbpShots, mbpParts, mbaShots, mbaParts } from './macbook/views.js';
 import { createStudioDisplay } from './studiodisplay/model.js';
 import { sdxShots, sdxParts } from './studiodisplay/views.js';
 import { createImac } from './imac/model.js';
 import { imacShots, imacParts } from './imac/views.js';
 // Devices built like the iPad: a create() module plus a shots table using
 // rot / dir / at / height. Each is created on first use.
-const GENERIC={ipad:{create:createIpad,shots:ipadShots,spread:[[1.05,.42,-.78],30,44]},ipadmini:{create:createIpadMini,shots:ipadMiniShots,spread:[[1.05,.42,-.78],24,35]},watch:{create:createWatch,shots:watchShots,spread:[[-1,.32,-.5],13,15]},air:{create:createAir,shots:null,compositions:true},i17:{create:createI17,shots:null,compositions:true},pixel:{create:createPixel,shots:null,compositions:true},mbp:{create:createMacbook,shots:mbpShots,spread:[[-.62,.42,-1],31,46]},sdx:{create:createStudioDisplay,shots:sdxShots,spread:[[-.62,.16,-1],60,74]},imac:{create:createImac,shots:imacShots,spread:[[-.62,.2,-1],60,76]}};
+const GENERIC={ipad:{create:createIpad,shots:ipadShots,spread:[[1.05,.42,-.78],30,44]},ipadmini:{create:createIpadMini,shots:ipadMiniShots,spread:[[1.05,.42,-.78],24,35]},watch:{create:createWatch,shots:watchShots,spread:[[-1,.32,-.5],13,15]},air:{create:createAir,shots:null,compositions:true},i17:{create:createI17,shots:null,compositions:true},pixel:{create:createPixel,shots:null,compositions:true},mbp:{create:createMacbook,shots:mbpShots,spread:[[-.62,.42,-1],31,46]},mba:{create:createMacbookAir,shots:mbaShots,spread:[[-.62,.42,-1],30,44]},sdx:{create:createStudioDisplay,shots:sdxShots,spread:[[-.62,.16,-1],60,74]},imac:{create:createImac,shots:imacShots,spread:[[-.62,.2,-1],60,76]}};
 
 export const shots={
   hero:{shelf:'compositions',title:'Free orbit',label:'Free orbit',target:[0,.03,0],dir:[-.53,.24,1],height:18.8,roll:-.245},
@@ -45,8 +45,8 @@ const {hero:i17Hero,front:i17Front,...i17Rest}=i17Shots;
 GENERIC.i17.shots={hero:i17Hero,front:i17Front,...compositions,...i17Rest};
 const {hero:pxHero,front:pxFront,...pxRest}=pixelShots;
 GENERIC.pixel.shots={hero:pxHero,front:pxFront,...compositions,...pxRest};
-export const deviceShots={pro:{...shots},duo:duoShots,ipad:ipadShots,ipadmini:ipadMiniShots,watch:watchShots,air:GENERIC.air.shots,i17:GENERIC.i17.shots,pixel:GENERIC.pixel.shots,mbp:mbpShots,sdx:sdxShots,imac:imacShots};
-export const deviceParts={pro:{...parts},duo:duoParts,ipad:ipadParts,ipadmini:ipadMiniParts,watch:watchParts,air:airParts,i17:i17Parts,pixel:pixelParts,mbp:mbpParts,sdx:sdxParts,imac:imacParts};
+export const deviceShots={pro:{...shots},duo:duoShots,ipad:ipadShots,ipadmini:ipadMiniShots,watch:watchShots,air:GENERIC.air.shots,i17:GENERIC.i17.shots,pixel:GENERIC.pixel.shots,mbp:mbpShots,mba:mbaShots,sdx:sdxShots,imac:imacShots};
+export const deviceParts={pro:{...parts},duo:duoParts,ipad:ipadParts,ipadmini:ipadMiniParts,watch:watchParts,air:airParts,i17:i17Parts,pixel:pixelParts,mbp:mbpParts,mba:mbaParts,sdx:sdxParts,imac:imacParts};
 const PRO_FAMILY=new Set(['pro']);
 const palettes={noir:['#060708','#020203','#000000'],studio:['#aaa','#aaa','#aaa'],stone:['#eae7e1','#c7c2bb','#b5afa7'],graphite:['#494847','#272727','#1e1e1e'],white:['#ececf0','#e5e5ea','#d9d9df']};
 

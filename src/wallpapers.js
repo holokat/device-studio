@@ -20,6 +20,7 @@ export const presentationWallpapers = {
   'ipad-portrait': { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Silver: 'silver-loops-macbook.jpg', Starlight: 'silver-loops-macbook.jpg' }, finishInk: { Silver: '#111113', Starlight: '#111113' } },
   // Mac displays: desktop wallpapers made for the studio.
   mbp: { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Silver: 'silver-loops-macbook.jpg' } },
+  mba: { name: 'Graphite loops', file: 'graphite-loops-macbook.jpg', fy: .5, finishes: { Silver: 'silver-loops-macbook.jpg', Starlight: 'silver-loops-macbook.jpg', 'Sky Blue': 'silver-loops-macbook.jpg' } },
   sdx: { name: 'Spectrum folds', file: 'spectrum-folds-xdr.jpg', fy: .5 },
   imac: { name: 'Ribbons', file: 'lilac-ribbons-imac.jpg', fy: .5, finishes: { Blue: 'ribbons-imac-blue.jpg', Purple: 'lilac-ribbons-imac.jpg', Pink: 'ribbons-imac-pink.jpg', Orange: 'ribbons-imac-orange.jpg', Yellow: 'ribbons-imac-yellow.jpg', Green: 'ribbons-imac-green.jpg', Silver: 'ribbons-imac-silver.jpg' } },
 };
