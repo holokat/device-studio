@@ -487,6 +487,6 @@ async function boot(){
   if(Object.hasOwn(shots,params.get('shot')))setShot(params.get('shot'));
   refresh();$('loading').hidden=true;
   stage.render(true);requestAnimationFrame(frame);
-  if(typeof __STUDIO_QA__!=='undefined'&&__STUDIO_QA__)window.studioQA={stage,art,motion,setShot,finish,exportGLB:()=>exportGLB(stage,motion),refresh,pause,onBusy};
+  if(typeof __STUDIO_QA__!=='undefined'&&__STUDIO_QA__)window.studioQA={stage,art,motion,setShot,finish,moves,moveById,exportGLB:()=>exportGLB(stage,motion),refresh,pause,onBusy};
 }
 boot().catch(error=>{console.error(error);$('loading').textContent='The 3D viewport could not start. '+error.message;if(typeof __STUDIO_QA__!=='undefined'&&__STUDIO_QA__)fetch('/log',{method:'POST',body:error.stack});});

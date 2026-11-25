@@ -14,6 +14,8 @@ import { duoMoves, duoBegin, applyDuoChannels, resetDuoChannels } from './duo/mo
 // Optional move fields: `at` (aim point, default 'array'), `pts` (points for pan),
 // `view` [x,y,z] + `dist` (cut to a camera direction in the handset's own frame
 // at that distance, for macro set-ups), `hold` (keep the final frame),
+// `screenSide` mirrors the orbit so the camera swings in from the side the
+// display faces, keeping the screen in view from angled compositions.
 // `face` ('screen' default, or 'back'): the side turned toward the camera at
 // spin 0. The director flips the handset when the other side is showing, so
 // moves land on the display unless they are about the camera hardware.
@@ -39,19 +41,19 @@ export const easings = {
 };
 
 export const moves = [
-  { id: 'hero-reveal', name: 'Hero reveal', note: 'Rising half turn with a slow push', dur: 4.5,
-    tracks: { spin: [[0, -0.5], [1, 0, 'quint']], dolly: [[0, 1.35], [1, 1, 'quint']], rise: [[0, -0.14], [1, 0, 'quint']] } },
+  { id: 'hero-reveal', name: 'Hero reveal', note: 'Rising full turn with a slow push, display first and last', dur: 4.5,
+    tracks: { spin: [[0, -1], [1, 0, 'quint']], dolly: [[0, 1.35], [1, 1, 'quint']], rise: [[0, -0.14], [1, 0, 'quint']] } },
   { id: 'quick-spin', name: 'Quick spin', note: 'One fast turn on the long axis', dur: 1.6,
     tracks: { spin: [[0, 0], [1, 1, 'expoInOut']] } },
   { id: 'double-spin', name: 'Double spin', note: 'Two turns, hard in and out', dur: 2.2,
     tracks: { spin: [[0, 0], [1, 2, 'expoInOut']] } },
-  { id: 'flip-display', face: 'back', name: 'Flip to display', note: 'Anticipation, then snap to the screen', dur: 1.8, hold: true,
-    tracks: { spin: [[0, 0], [0.18, -0.035, 'sine'], [1, 0.5, 'expoOut']] } },
+  { id: 'flip-display', name: 'Flip to display', note: 'Anticipation, a full flip, snaps back to the screen', dur: 1.8, hold: true,
+    tracks: { spin: [[0, 0], [0.18, -0.035, 'sine'], [1, 1, 'expoOut']] } },
   { id: 'turntable', name: 'Slow turntable', note: 'Even 360° camera orbit, loops', dur: 9, loop: true,
     tracks: { orbit: [[0, 0], [1, 1, 'lin']] } },
   { id: 'push-in', name: 'Slow push', note: 'Gentle dolly toward the device', dur: 5, hold: true,
     tracks: { dolly: [[0, 1.12], [1, 0.62, 'sine']] } },
-  { id: 'pull-reveal', face: 'back', name: 'Pull-back reveal', note: 'Start on the lenses, pull out wide', dur: 4,
+  { id: 'pull-reveal', name: 'Pull-back reveal', note: 'Start inside the app, pull out wide', dur: 4, at: 'scrUpper',
     tracks: { dolly: [[0, 0.36], [1, 1, 'quint']], focus: [[0, 1], [1, 0, 'quint']] } },
   { id: 'macro-sweep', face: 'back', name: 'Lens macro sweep', note: 'Close pass across the camera array', dur: 5, hold: true,
     tracks: { focus: [[0, 1], [1, 1]], dolly: [[0, 0.34], [1, 0.29, 'sine']], orbit: [[0, -0.07], [1, 0.07, 'sine']], rise: [[0, 0.12], [1, -0.06, 'sine']] } },
@@ -61,22 +63,22 @@ export const moves = [
     tracks: { lift: [[0, 0], [0.5, 0.55, 'sine'], [1, 0, 'sine']], twist: [[0, -0.008], [0.5, 0.008, 'sine'], [1, -0.008, 'sine']], spin: [[0, -0.025], [0.5, 0.025, 'sine'], [1, -0.025, 'sine']] } },
   { id: 'edge-reveal', name: 'Edge reveal', note: 'Turns to profile to show thinness', dur: 4,
     tracks: { spin: [[0, 0], [0.38, 0.25, 'quintInOut'], [0.66, 0.25], [1, 0, 'quintInOut']] } },
-  { id: 'whip-pan', name: 'Whip pan', note: 'Fast orbit with an overshoot settle', dur: 1.4, hold: true,
-    tracks: { orbit: [[0, 0], [0.72, 0.268, 'expoInOut'], [1, 0.25, 'sine']] } },
+  { id: 'whip-pan', screenSide: true, name: 'Whip pan', note: 'Whips in from the side and settles on the display', dur: 1.4, hold: true,
+    tracks: { orbit: [[0, -0.16], [0.72, 0.012, 'expoInOut'], [1, 0, 'sine']] } },
   { id: 'orbit-rise', name: 'Orbit crane', note: 'Orbit while the camera rises', dur: 5,
-    tracks: { orbit: [[0, -0.15], [1, 0.15, 'sine']], rise: [[0, -0.28], [1, 0.32, 'sine']] } },
+    tracks: { orbit: [[0, -0.08], [1, 0.08, 'sine']], rise: [[0, -0.24], [1, 0.26, 'sine']] } },
   { id: 'dutch-spin', name: 'Dutch settle', note: 'Tilted quarter turn that levels out', dur: 2.6,
-    tracks: { twist: [[0, 0.07], [1, 0, 'quint']], spin: [[0, -0.25], [1, 0, 'quint']], dolly: [[0, 1.22], [1, 1, 'quint']] } },
+    tracks: { twist: [[0, 0.07], [1, 0, 'quint']], spin: [[0, -0.08], [1, 0, 'quint']], dolly: [[0, 1.22], [1, 1, 'quint']] } },
   { id: 'explode-orbit', name: 'Exploded orbit', note: 'Layers part, orbit, then close', dur: 6,
     tracks: { explode: [[0, 0], [0.3, 1, 'quintInOut'], [0.7, 1], [1, 0, 'quintInOut']], orbit: [[0, 0], [1, 0.22, 'sine']], dolly: [[0, 1], [0.3, 1.5, 'quintInOut'], [0.7, 1.5], [1, 1, 'quintInOut']] } },
   { id: 'layer-push', name: 'Layer push', note: 'Explode with a push into the stack', dur: 4, hold: true,
     tracks: { explode: [[0, 0], [0.55, 1, 'expoInOut'], [1, 1]], dolly: [[0, 1], [0.55, 1.55, 'expoInOut'], [1, 1.25, 'sine']] } },
   { id: 'slide-in', name: 'Slide in', note: 'Enters from the left and settles', dur: 2.2,
-    tracks: { slide: [[0, -30], [1, 0, 'expoOut']], spin: [[0, -0.35], [1, 0, 'expoOut']] } },
+    tracks: { slide: [[0, -30], [1, 0, 'expoOut']], spin: [[0, -0.05], [1, 0, 'expoOut']] } },
   { id: 'spin-settle', name: 'Spin and settle', note: 'Full turn with an elastic overshoot', dur: 2.4,
     tracks: { spin: [[0, 0], [1, 1, 'back']] } },
   { id: 'crane-down', name: 'Top-down reveal', note: 'From overhead down to eye level', dur: 4,
-    tracks: { rise: [[0, 1.15], [1, 0, 'quint']], dolly: [[0, 1.18], [1, 1, 'quint']] } },
+    tracks: { rise: [[0, 0.9], [1, 0, 'quint']], dolly: [[0, 1.18], [1, 1, 'quint']] } },
   { id: 'backflip', name: 'Backflip', note: 'Full end-over-end flip', dur: 2,
     tracks: { tumble: [[0, 0], [1, 1, 'expoInOut']], lift: [[0, 0], [0.5, 3, 'sine'], [1, 0, 'sine']] } },
   // ── Macro and detail ──────────────────────────────────────────────
@@ -169,7 +171,7 @@ export const moves = [
   { id: 'lens-to-screen', face: 'back', name: 'Lens to screen', note: 'Macro on the lenses, pull out, flip to display', dur: 5, hold: true,
     tracks: { focus: [[0, 1], [0.5, 0, 'quintInOut']], dolly: [[0, 0.32], [0.5, 1, 'quintInOut']], spin: [[0, 0], [0.52, 0], [1, 0.5, 'expoInOut']] } },
   { id: 'rise-and-turn', name: 'Rise and turn', note: 'Rises from below frame spinning to rest', dur: 2.8,
-    tracks: { lift: [[0, -22], [0.85, 0, 'expoOut'], [1, 0]], spin: [[0, -1.5], [1, 0, 'expoOut']], rise: [[0, -0.15], [1, 0, 'quint']] } },
+    tracks: { lift: [[0, -22], [0.85, 0, 'expoOut'], [1, 0]], spin: [[0, -2], [1, 0, 'expoOut']], rise: [[0, -0.15], [1, 0, 'quint']] } },
   { id: 'drop-flip', face: 'back', name: 'Drop and flip', note: 'Falls in face-down and flips face-up', dur: 3, hold: true,
     tracks: { lift: [[0, 18], [0.5, 0, 'expoOut']], tumble: [[0, -0.6], [0.5, 0, 'expoOut']], spin: [[0, 0], [0.55, 0], [1, 0.5, 'expoInOut']] } },
   { id: 'whip-to-macro', face: 'back', name: 'Whip to macro', note: 'Whip pan that lands on the lenses', dur: 2.4, hold: true,
@@ -219,13 +221,25 @@ export function createDirector(stage) {
   const toCam = new THREE.Vector3();
   const offset = new THREE.Vector3(), target = new THREE.Vector3(), lens = new THREE.Vector3();
   const sph = new THREE.Spherical();
+  const qWorld = new THREE.Quaternion(), dir = new THREE.Vector3();
+
+  // Composition views put the handset inside a posed (rotated, scaled) group,
+  // so every handset-frame direction and point goes through that parent.
+  function parentFrame(model) {
+    const parent = model.parent;
+    if (!parent) return { pMat: new THREE.Matrix4(), pQuat: new THREE.Quaternion(), pInv: new THREE.Quaternion(), pScale: 1 };
+    parent.updateWorldMatrix(true, false);
+    const pQuat = parent.getWorldQuaternion(new THREE.Quaternion());
+    return { pMat: parent.matrixWorld.clone(), pQuat, pInv: pQuat.clone().invert(), pScale: parent.getWorldScale(new THREE.Vector3()).x || 1 };
+  }
 
   function begin() {
     reset();
     const model = stage.model;
     model.updateMatrixWorld(true);
+    const frame = parentFrame(model);
     base = {
-      model, points: stage.points?.() || POINTS,
+      model, ...frame, fov: camera.fov, points: stage.points?.() || POINTS,
       pos: camera.position.clone(), target: control.target.clone(),
       mPos: model.position.clone(), mQuat: model.quaternion.clone(), progress: stage.progress,
       right: new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0).normalize(),
@@ -234,7 +248,7 @@ export function createDirector(stage) {
       // (the long axis in portrait, the short axis for a landscape iPad);
       // tumble about the other one.
       ...(() => {
-        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(model.quaternion.clone().invert());
+        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(frame.pQuat.clone().multiply(model.quaternion).invert());
         const yUp = Math.abs(up.y) >= Math.abs(up.x);
         const spinAxis = yUp ? new THREE.Vector3(0, Math.sign(up.y) || 1, 0) : new THREE.Vector3(Math.sign(up.x), 0, 0);
         const tumbleAxis = yUp ? AXIS.x.clone() : new THREE.Vector3(0, -Math.sign(up.x), 0);
@@ -260,10 +274,18 @@ export function createDirector(stage) {
     // handset frame; flip half a turn when the camera sees the other side.
     if (base.faceFor !== move.id) {
       base.faceFor = move.id;
-      toCam.copy(base.pos).sub(base.mPos).applyQuaternion(base.mQuat.clone().invert());
+      toCam.copy(base.pos).sub(dir.copy(base.mPos).applyMatrix4(base.pMat)).applyQuaternion(qWorld.copy(base.pQuat).multiply(base.mQuat).invert());
       const seesScreen = toCam.z < 0;
       base.flip = move.view ? 0 : (move.face === 'back') === seesScreen ? 0.5 : 0;
       qBase.copy(base.mQuat).multiply(turn.setFromAxisAngle(base.spinAxis, base.flip * tau));
+      base.orbitSign = 1;
+      if (move.screenSide) {
+        const n = dir.set(0, 0, -1).applyQuaternion(qBase).applyQuaternion(base.pQuat);
+        const cam = offset.copy(base.pos).sub(base.target);
+        const d = Math.atan2(Math.sin(Math.atan2(n.x, n.z) - Math.atan2(cam.x, cam.z)), Math.cos(Math.atan2(n.x, n.z) - Math.atan2(cam.x, cam.z)));
+        const first = k.orbit?.[0]?.[1] || 0;
+        if (first * d < 0) base.orbitSign = -1;
+      }
     }
     q.copy(qBase);
     if (k.spin) q.multiply(turn.setFromAxisAngle(base.spinAxis, v('spin') * tau));
@@ -271,15 +293,16 @@ export function createDirector(stage) {
     if (k.twist) q.multiply(turn.setFromAxisAngle(AXIS.z, v('twist') * tau));
     model.quaternion.copy(q);
     model.position.copy(base.mPos);
-    if (k.lift) model.position.y += v('lift');
-    if (k.slide) model.position.addScaledVector(base.right, v('slide'));
+    // Lift is world up and slide is camera right, whatever the parent pose.
+    if (k.lift) model.position.addScaledVector(dir.set(0, 1, 0).applyQuaternion(base.pInv), v('lift') / base.pScale);
+    if (k.slide) model.position.addScaledVector(dir.copy(base.right).applyQuaternion(base.pInv), v('slide') / base.pScale);
 
     // A fold changes where the Duo's parts are, so refresh live anchors first.
     if (k.explode) stage.setProgress(v('explode'));
     const duoMoved = move.device === 'duo' && applyDuoChannels(stage, move, t, v);
     const pts = (k.explode || duoMoved) && base.points !== POINTS ? stage.points() : base.points;
     const entry = (name) => pts[name] || pts.array;
-    const world = (name) => { const e = entry(name); return lens.copy(e.isVector3 ? e : e.p).applyQuaternion(qBase).add(base.mPos); };
+    const world = (name) => { const e = entry(name); return lens.copy(e.isVector3 ? e : e.p).applyQuaternion(qBase).add(base.mPos).applyMatrix4(base.pMat); };
     let aim = null;
     if (move.pts) {
       const f = THREE.MathUtils.clamp(v('pan'), 0, move.pts.length - 1), i = Math.min(move.pts.length - 2, Math.floor(f));
@@ -287,17 +310,21 @@ export function createDirector(stage) {
     } else if (move.at || k.focus) aim = world(move.at || 'array').clone();
     target.copy(base.target);
     if (aim) target.lerp(aim, move.view && !k.focus ? 1 : v('focus', move.pts ? 1 : 0));
+    // View set-ups are authored for the 26° studio lens; composition views use
+    // a long lens that would crop them several times tighter.
+    const fov = move.view ? 26 : base.fov;
+    if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
     if (move.view) {
       offset.fromArray(move.view).normalize();
       // Views are authored for the 18 Pro. When a Duo part faces the other way
       // in the current pose, mirror the view across that part's surface.
       const n = entry(move.at || move.pts?.[0] || 'array').n;
       if (n) { const d = offset.dot(n); if (d < 0) offset.addScaledVector(n, -2 * d); }
-      offset.applyQuaternion(qBase).multiplyScalar((move.dist || 3) * (move.device ? 1 : base.scale));
+      offset.applyQuaternion(qBase).applyQuaternion(base.pQuat).multiplyScalar((move.dist || 3) * (move.device ? 1 : base.scale) * base.pScale);
     }
     else offset.copy(base.pos).sub(base.target);
     sph.setFromVector3(offset);
-    sph.theta += v('orbit') * tau;
+    sph.theta += v('orbit') * tau * base.orbitSign;
     sph.phi = THREE.MathUtils.clamp(sph.phi - v('rise'), 0.04, Math.PI - 0.04);
     sph.radius *= v('dolly', 1);
     offset.setFromSpherical(sph);
@@ -313,6 +340,7 @@ export function createDirector(stage) {
     const model = base.model;
     model.position.copy(base.mPos);
     model.quaternion.copy(base.mQuat);
+    if (camera.fov !== base.fov) { camera.fov = base.fov; camera.updateProjectionMatrix(); }
     if (!base.cameraFree) {
       camera.position.copy(base.pos);
       control.target.copy(base.target);
